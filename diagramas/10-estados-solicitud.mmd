@@ -1,0 +1,34 @@
+---
+config:
+  themeVariables:
+    fontSize: "17px"
+---
+stateDiagram-v2
+    direction TB
+    state "Nueva" as Nueva
+    state "En curso" as EnCurso
+    state "En espera" as EnEspera
+    state cierre <<choice>>
+    state "Cerrada sin confirmación" as SinConfirmacion
+    state "Resuelta" as Resuelta
+    state "Cancelada" as Cancelada
+    state "Descartada" as Descartada
+    state "Duplicada" as Duplicada
+
+    [*] --> Nueva : registrar(autor)
+    Nueva --> Descartada : descartar(autor, motivo)
+    Nueva --> EnCurso : registrarIntervencion(intervencion)
+    Nueva --> Duplicada : marcarDuplicada(original, autor)
+    EnCurso --> Duplicada : marcarDuplicada(original, autor)
+    EnCurso --> EnEspera : abrirEspera(motivo, autor)
+    EnEspera --> EnCurso : cerrarEspera(autor)
+    EnCurso --> cierre : cerrar(cierre, autor, motivo)
+    EnEspera --> cierre : cerrar(cierre, autor, motivo) / cierra la espera
+    cierre --> Resuelta : [RESUELTA y validarCierre()]
+    cierre --> SinConfirmacion : [CERRADA_SIN_CONFIRMACION y validarCierre()]
+    cierre --> Cancelada : [CANCELADA y motivo informado]
+    Resuelta --> EnCurso : reabrir(autor, motivo)
+    SinConfirmacion --> EnCurso : reabrir(autor, motivo)
+    Descartada --> [*]
+    Duplicada --> [*]
+    Cancelada --> [*]

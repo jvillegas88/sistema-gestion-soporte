@@ -1,0 +1,354 @@
+-- Sistema de gestión y análisis del soporte técnico y funcional
+-- 02_datos.sql: catálogos, datos maestros y datos de prueba
+-- MySQL 8.4. Se ejecuta sobre la base recién creada con 01_creacion.sql.
+-- Todos los datos son ficticios: clientes, personas y correos inventados.
+
+-- La conexión tiene que usar utf8mb4 para que las tildes se guarden bien
+SET NAMES utf8mb4;
+
+USE gestion_soporte;
+
+-- ------------------------------------------------------------------
+-- Catálogos
+-- ------------------------------------------------------------------
+
+INSERT INTO roles (rol_id, nombre) VALUES
+    (1, 'Soporte funcional'),
+    (2, 'Soporte técnico'),
+    (3, 'Infraestructura'),
+    (4, 'Desarrollo'),
+    (5, 'Gestión');
+
+INSERT INTO tipos_solicitud (tipo_solicitud_id, nombre) VALUES
+    (1, 'Consulta funcional'),
+    (2, 'Error de desarrollo'),
+    (3, 'Error de infraestructura'),
+    (4, 'Pedido de presupuesto'),
+    (5, 'Pedido de infraestructura');
+
+INSERT INTO prioridades (prioridad_id, nombre, criterio) VALUES
+    (1, 'Urgente', 'El servicio del cliente está detenido en producción o hay riesgo sobre los datos'),
+    (2, 'Alta',    'Un error impide una operación y no hay alternativa'),
+    (3, 'Normal',  'Error con alternativa, o consulta funcional'),
+    (4, 'Baja',    'Pedidos de presupuesto y cambios que se pueden planificar');
+
+INSERT INTO estados (estado_id, nombre, es_cierre) VALUES
+    (1, 'Nueva', FALSE),
+    (2, 'En curso', FALSE),
+    (3, 'En espera', FALSE),
+    (4, 'Resuelta', TRUE),
+    (5, 'Cerrada sin confirmación', TRUE),
+    (6, 'Cancelada', TRUE),
+    (7, 'Descartada', TRUE),
+    (8, 'Duplicada', TRUE);
+
+INSERT INTO canales (canal_id, nombre) VALUES
+    (1, 'Correo'),
+    (2, 'Detección interna');
+
+INSERT INTO tipos_intervencion (tipo_intervencion_id, nombre) VALUES
+    (1, 'Análisis'),
+    (2, 'Respuesta al cliente'),
+    (3, 'Corrección'),
+    (4, 'Revisión de código'),
+    (5, 'Deploy'),
+    (6, 'Cambio en el servidor'),
+    (7, 'Estimación'),
+    (8, 'Reunión con el cliente');
+
+INSERT INTO motivos_espera (motivo_espera_id, nombre) VALUES
+    (1, 'Espera del cliente'),
+    (2, 'Espera interna'),
+    (3, 'Ventana de deploy');
+
+INSERT INTO tipos_hito (tipo_hito_id, nombre) VALUES
+    (1, 'Corrección'),
+    (2, 'Publicación en testing'),
+    (3, 'Publicación en producción'),
+    (4, 'Intervención en el servidor');
+
+-- ------------------------------------------------------------------
+-- Datos maestros
+-- ------------------------------------------------------------------
+
+-- El "Cliente no identificado" recibe lo importado sin cliente (CU02, 4a)
+INSERT INTO clientes (cliente_id, nombre, dominio_correo) VALUES
+    (1, 'Cliente no identificado', NULL),
+    (2, 'Cliente A', 'cliente-a.com.ar'),
+    (3, 'Cliente B', 'cliente-b.com.ar'),
+    (4, 'Cliente C', 'cliente-c.com.ar');
+
+INSERT INTO productos (producto_id, nombre, correo_soporte) VALUES
+    (1, 'Producto A', 'soporte.producto-a@empresa-ejemplo.com.ar'),
+    (2, 'Producto B', 'soporte.producto-b@empresa-ejemplo.com.ar');
+
+-- El número de módulo se repite entre productos: la clave es (producto, número)
+INSERT INTO modulos (producto_id, modulo_nro, nombre) VALUES
+    (1, 1, 'Observaciones'),
+    (1, 2, 'Informes'),
+    (1, 3, 'Planificación'),
+    (1, 4, 'Usuarios y permisos'),
+    (2, 1, 'Legajos'),
+    (2, 2, 'Operaciones'),
+    (2, 3, 'Reportes'),
+    (2, 4, 'Usuarios y permisos');
+
+-- Pablo Acosta escribió desde un correo personal: el dominio no identifica al cliente
+INSERT INTO solicitantes (solicitante_id, cliente_id, nombre, correo) VALUES
+    (1, 2, 'Mariana López',   'mlopez@cliente-a.com.ar'),
+    (2, 2, 'Ricardo Paz',     'rpaz@cliente-a.com.ar'),
+    (3, 3, 'Julieta Ramos',   'jramos@cliente-b.com.ar'),
+    (4, 3, 'Hernán Díaz',     'hdiaz@cliente-b.com.ar'),
+    (5, 4, 'Gabriela Torres', 'gtorres@cliente-c.com.ar'),
+    (6, 1, 'Pablo Acosta',    'pablo.acosta@correo-personal.com');
+
+-- Clave de ejemplo, solo para los datos de prueba
+INSERT INTO integrantes (integrante_id, rol_id, nombre, usuario, clave_hash) VALUES
+    (1, 1, 'Laura Gómez',    'lgomez',    SHA2('clave_de_ejemplo', 256)),
+    (2, 2, 'Diego Ferreyra', 'dferreyra', SHA2('clave_de_ejemplo', 256)),
+    (3, 2, 'Paula Medina',   'pmedina',   SHA2('clave_de_ejemplo', 256)),
+    (4, 3, 'Martín Rojas',   'mrojas',    SHA2('clave_de_ejemplo', 256)),
+    (5, 4, 'Valeria Sosa',   'vsosa',     SHA2('clave_de_ejemplo', 256)),
+    (6, 4, 'Tomás Herrera',  'therrera',  SHA2('clave_de_ejemplo', 256)),
+    (7, 5, 'Silvia Castro',  'scastro',   SHA2('clave_de_ejemplo', 256));
+
+-- ------------------------------------------------------------------
+-- Solicitudes (julio a septiembre de 2026, más dos importadas de junio)
+-- ------------------------------------------------------------------
+
+INSERT INTO solicitudes (solicitud_id, numero_origen, solicitante_id, producto_id,
+    modulo_nro, canal_id, tipo_solicitud_id, prioridad_id, solicitud_origen_id,
+    tipo_vinculo, fecha_recepcion, asunto, descripcion, tiempo_historico)
+VALUES
+    -- 1 y 2: importadas del CSV, sin clasificar y con el tiempo total del histórico
+    (1, 4521, 6, 1, NULL, 1, NULL, NULL, NULL, NULL, '2026-06-10 09:12:00',
+     'No puedo cerrar una observación',
+     'Al intentar cerrar la observación aparece un mensaje de error.', 1.50),
+    (2, 4533, 6, 1, NULL, 1, NULL, NULL, NULL, NULL, '2026-06-18 15:40:00',
+     'Eliminar un informe definitivo cargado por error',
+     'Se emitió como definitivo un informe que todavía estaba en revisión.', 2.00),
+    -- 3: error que recorre soporte funcional, soporte técnico e infraestructura
+    (3, NULL, 1, 1, 2, 1, 2, 2, NULL, NULL, '2026-07-06 09:40:00',
+     'Error al generar el informe final en PDF',
+     'Al generar el informe final de la auditoría 2026-03 aparece un error y el PDF no se descarga.', NULL),
+    (4, NULL, 2, 1, 1, 1, 1, 3, NULL, NULL, '2026-07-14 11:05:00',
+     'Cómo reasignar una observación a otro auditor',
+     'Un auditor dejó la organización y hay que pasar sus observaciones a otra persona.', NULL),
+    -- 5: entra como error de desarrollo y después se reclasifica
+    (5, NULL, 3, 2, 2, 1, 2, 2, NULL, NULL, '2026-07-21 10:00:00',
+     'No se puede anular una operación',
+     'El sistema no deja anular una operación que se cargó ayer por error.', NULL),
+    (6, NULL, 4, 2, 3, 1, 4, 4, NULL, NULL, '2026-08-03 14:00:00',
+     'Nuevo reporte de operaciones por sucursal',
+     'Piden un reporte mensual de operaciones agrupado por sucursal y exportable a Excel.', NULL),
+    (7, NULL, 5, 1, 1, 1, 5, 3, NULL, NULL, '2026-08-10 09:00:00',
+     'Reabrir una observación cerrada por error',
+     'Un usuario cerró la observación 1834 antes de tiempo y la interfaz no permite reabrirla.', NULL),
+    (8, NULL, 1, 1, NULL, 1, 3, 1, NULL, NULL, '2026-08-24 08:15:00',
+     'El sistema no responde desde esta mañana',
+     'Ningún usuario puede ingresar a la instancia de producción.', NULL),
+    -- 9: detectada por infraestructura, sin correo del cliente
+    (9, NULL, 4, 2, NULL, 2, 5, 4, NULL, NULL, '2026-09-01 09:00:00',
+     'Renovar el certificado del servidor de producción',
+     'Infraestructura detecta que el certificado vence el 10 de septiembre. La renovación requiere reiniciar el servicio.', NULL),
+    (10, NULL, 5, 1, 2, 1, 2, 3, NULL, NULL, '2026-09-07 10:15:00',
+     'Totales incorrectos en el informe de seguimiento',
+     'Los totales por área del informe de seguimiento no coinciden con el detalle. En el mismo correo consulta cómo exportar el informe a Excel.', NULL),
+    -- 11: separada de la 10, porque el correo traía dos temas (CU04)
+    (11, NULL, 5, 1, 2, 1, 1, 3, 10, 'DERIVADA', '2026-09-07 10:15:00',
+     'Cómo exportar el informe de seguimiento a Excel',
+     'Separada de la solicitud 10.', NULL);
+
+-- ------------------------------------------------------------------
+-- Recorrido de cada solicitud
+-- ------------------------------------------------------------------
+
+-- Quien registra la solicitud es su primer responsable
+INSERT INTO asignaciones (solicitud_id, integrante_id, asignado_por_id, fecha) VALUES
+    (3, 1, 1, '2026-07-06 09:40:00'),
+    (3, 2, 1, '2026-07-06 11:30:00'),
+    (4, 1, 1, '2026-07-14 11:05:00'),
+    (5, 1, 1, '2026-07-21 10:00:00'),
+    (5, 3, 1, '2026-07-21 11:00:00'),
+    (5, 1, 3, '2026-07-22 11:00:00'),  -- vuelve a soporte funcional (CU05, 1a)
+    (6, 1, 1, '2026-08-03 14:00:00'),
+    (6, 5, 7, '2026-08-04 09:00:00'),  -- gestión la pasa a desarrollo
+    (7, 1, 1, '2026-08-10 09:00:00'),
+    (7, 2, 1, '2026-08-10 10:00:00'),
+    (7, 4, 2, '2026-08-10 16:00:00'),
+    (8, 1, 1, '2026-08-24 08:15:00'),
+    (8, 4, 1, '2026-08-24 08:25:00'),
+    (9, 1, 1, '2026-09-01 09:00:00'),
+    (9, 4, 1, '2026-09-01 09:05:00'),
+    (10, 1, 1, '2026-09-07 10:15:00'),
+    (10, 2, 1, '2026-09-07 11:00:00'),
+    (11, 1, 1, '2026-09-07 10:50:00');
+
+-- Estados: 1 Nueva, 2 En curso, 3 En espera, 4 Resuelta, 5 Cerrada sin confirmación
+INSERT INTO cambios_estado (solicitud_id, estado_id, autor_id, fecha, motivo) VALUES
+    (1, 4, 1, '2026-07-01 08:30:00', 'Importada del histórico ya resuelta'),
+    (2, 4, 1, '2026-07-01 08:30:00', 'Importada del histórico ya resuelta'),
+    (3, 1, 1, '2026-07-06 09:40:00', NULL),
+    (3, 2, 1, '2026-07-06 10:00:00', NULL),
+    (3, 3, 2, '2026-07-10 16:00:00', 'Validación del cliente en testing'),
+    (3, 2, 2, '2026-07-13 09:10:00', 'El cliente confirmó la corrección'),
+    (3, 4, 2, '2026-07-14 12:00:00', NULL),
+    (4, 1, 1, '2026-07-14 11:05:00', NULL),
+    (4, 2, 1, '2026-07-14 11:20:00', NULL),
+    (4, 4, 1, '2026-07-14 12:10:00', NULL),
+    (5, 1, 1, '2026-07-21 10:00:00', NULL),
+    (5, 2, 1, '2026-07-21 10:30:00', NULL),
+    (5, 4, 1, '2026-07-22 15:00:00', NULL),
+    (6, 1, 1, '2026-08-03 14:00:00', NULL),
+    (6, 2, 1, '2026-08-03 15:00:00', NULL),
+    (6, 3, 1, '2026-08-04 09:00:00', 'Espera la estimación de desarrollo'),
+    (6, 2, 5, '2026-08-11 10:00:00', NULL),
+    (6, 4, 5, '2026-08-12 17:00:00', 'Estimación entregada a gestión'),
+    (7, 1, 1, '2026-08-10 09:00:00', NULL),
+    (7, 2, 1, '2026-08-10 09:30:00', NULL),
+    (7, 4, 4, '2026-08-11 12:00:00', NULL),
+    (8, 1, 1, '2026-08-24 08:15:00', NULL),
+    (8, 2, 1, '2026-08-24 08:20:00', NULL),
+    (8, 5, 4, '2026-08-28 18:00:00', 'El cliente no respondió después de restablecer el servicio'),
+    (9, 1, 1, '2026-09-01 09:00:00', NULL),
+    (9, 2, 4, '2026-09-01 09:30:00', NULL),
+    (9, 3, 4, '2026-09-02 10:00:00', 'Espera la ventana de mantenimiento'),
+    (9, 2, 4, '2026-09-05 22:00:00', NULL),
+    (9, 4, 4, '2026-09-05 22:30:00', NULL),
+    (10, 1, 1, '2026-09-07 10:15:00', NULL),
+    (10, 2, 1, '2026-09-07 10:40:00', NULL),
+    (10, 3, 2, '2026-09-15 17:00:00', 'Validación del cliente en testing'),
+    (11, 1, 1, '2026-09-07 10:50:00', 'Separada de la solicitud 10'),
+    (11, 2, 1, '2026-09-07 11:00:00', NULL),
+    (11, 4, 1, '2026-09-07 11:40:00', NULL);
+
+-- Integrantes: 1 Laura (funcional), 2 Diego y 3 Paula (técnico),
+-- 4 Martín (infraestructura), 5 Valeria y 6 Tomás (desarrollo)
+INSERT INTO intervenciones (intervencion_id, solicitud_id, integrante_id,
+    tipo_intervencion_id, fecha, descripcion, tiempo_horas)
+VALUES
+    -- Solicitud 3: cuatro integrantes, cada uno con su tiempo (P01)
+    (1, 3, 1, 1, '2026-07-06 10:00:00', 'Reproduce el error y reúne pasos y capturas', 1.00),
+    (2, 3, 2, 1, '2026-07-07 09:30:00', 'Reproduce el error en la instancia local y ubica la causa', 2.50),
+    (3, 3, 2, 3, '2026-07-09 14:00:00', 'Corrige el armado del PDF cuando hay anexos vacíos', 3.00),
+    (4, 3, 3, 4, '2026-07-10 10:00:00', 'Revisa el pull request de la corrección', 0.75),
+    (5, 3, 4, 5, '2026-07-10 15:00:00', 'Deploy en el ambiente de testing del cliente', 0.50),
+    (6, 3, 4, 5, '2026-07-14 11:00:00', 'Deploy en el ambiente de producción del cliente', 0.50),
+    (7, 3, 2, 2, '2026-07-14 12:00:00', 'Avisa al cliente que la corrección está en producción', 0.25),
+    (8, 4, 1, 2, '2026-07-14 11:20:00', 'Explica cómo reasignar las observaciones y envía el instructivo', 0.75),
+    (9, 5, 1, 1, '2026-07-21 10:30:00', 'Revisa el caso y lo pasa a soporte técnico como posible error', 0.50),
+    (10, 5, 3, 1, '2026-07-22 09:00:00', 'Verifica que la operación no se puede anular después del cierre diario', 1.50),
+    (11, 5, 1, 2, '2026-07-22 14:30:00', 'Explica al cliente cómo funciona el cierre diario', 0.50),
+    (12, 6, 1, 1, '2026-08-03 15:00:00', 'Define con el cliente el alcance del reporte', 1.00),
+    -- Intervención de tipo Estimación: sus ítems van en items_estimacion
+    (13, 6, 5, 7, '2026-08-11 10:00:00', 'Estima el desarrollo del reporte de operaciones por sucursal', 3.00),
+    (14, 7, 1, 1, '2026-08-10 09:30:00', 'Confirma que la observación quedó cerrada por error', 0.50),
+    (15, 7, 2, 1, '2026-08-10 15:00:00', 'Verifica que el cambio no afecta otros registros', 1.00),
+    (16, 7, 4, 6, '2026-08-11 11:30:00', 'Cambia el estado de la observación desde la consola', 0.50),
+    (17, 7, 4, 2, '2026-08-11 11:45:00', 'Avisa al cliente que la observación volvió a quedar abierta', 0.25),
+    (18, 8, 1, 1, '2026-08-24 08:20:00', 'Confirma que el sistema no responde y escala a infraestructura', 0.25),
+    (19, 8, 4, 6, '2026-08-24 08:30:00', 'Libera espacio en disco y reinicia los servicios', 1.50),
+    (20, 8, 4, 2, '2026-08-24 10:15:00', 'Avisa al cliente que el servicio está restablecido', 0.25),
+    (21, 9, 4, 1, '2026-09-01 09:30:00', 'Revisa el certificado y prepara la renovación', 0.50),
+    (22, 9, 4, 6, '2026-09-05 22:00:00', 'Renueva el certificado y reinicia el servicio', 1.00),
+    (23, 10, 1, 1, '2026-09-07 10:40:00', 'Reproduce la diferencia en los totales', 0.75),
+    (24, 10, 2, 1, '2026-09-08 09:00:00', 'Ubica el error en el cálculo de los totales por área', 2.00),
+    (25, 10, 2, 3, '2026-09-14 11:00:00', 'Corrige el cálculo de los totales', 2.50),
+    (26, 10, 6, 4, '2026-09-15 09:30:00', 'Revisa el pull request de la corrección', 0.50),
+    (27, 10, 4, 5, '2026-09-15 16:00:00', 'Deploy en el ambiente de testing del cliente', 0.50),
+    (28, 10, 2, 2, '2026-09-15 17:00:00', 'Pide al cliente que valide la corrección en testing', 0.25),
+    (29, 11, 1, 2, '2026-09-07 11:15:00', 'Explica cómo exportar el informe a Excel', 0.50);
+
+-- El ítem 4 repite el 2 por error: se borra en 04_borrado.sql
+INSERT INTO items_estimacion (intervencion_id, item_nro, descripcion, horas) VALUES
+    (13, 1, 'Consulta de operaciones por sucursal con filtro de período', 12.00),
+    (13, 2, 'Diseño del reporte y exportación a Excel', 10.00),
+    (13, 3, 'Pruebas y ajustes con el cliente', 6.00),
+    (13, 4, 'Diseño del reporte y exportación a Excel', 10.00);
+
+INSERT INTO comunicaciones (intervencion_id, tipo, texto) VALUES
+    (1, 'NOTA_INTERNA', 'Se reproduce con la auditoría 2026-03 cuando el informe tiene anexos vacíos. Adjunto pasos y capturas. Paso a soporte técnico.'),
+    (7, 'RESPUESTA_CLIENTE', 'La corrección ya está publicada en producción. Ya pueden generar el informe final.'),
+    (8, 'RESPUESTA_CLIENTE', 'Les enviamos el instructivo para reasignar las observaciones a otro auditor.'),
+    (10, 'NOTA_INTERNA', 'No es un error: la operación no se puede anular después del cierre diario. Reclasifico como consulta funcional y la devuelvo a soporte funcional.'),
+    (11, 'RESPUESTA_CLIENTE', 'La operación no se puede anular porque el día ya está cerrado. Se corrige cargando la operación inversa.'),
+    (13, 'NOTA_INTERNA', 'Estimación cargada con sus ítems. Queda para que gestión arme el presupuesto.'),
+    (15, 'NOTA_INTERNA', 'Cliente C, observación 1834, campo estado. Valor actual: Cerrada. Valor nuevo: En proceso. No afecta otros registros.'),
+    (17, 'RESPUESTA_CLIENTE', 'La observación 1834 volvió a quedar abierta.'),
+    (20, 'RESPUESTA_CLIENTE', 'El servicio ya está restablecido. Si notan algún problema, respondan este correo.'),
+    (28, 'RESPUESTA_CLIENTE', 'La corrección está publicada en testing. Por favor validen los totales y avísennos para pasarla a producción.'),
+    (29, 'RESPUESTA_CLIENTE', 'Para exportar el informe a Excel hay que usar el botón Exportar de la vista previa.');
+
+-- La espera de la solicitud 10 sigue abierta (hasta en NULL)
+INSERT INTO esperas (solicitud_id, motivo_espera_id, autor_id, desde, hasta) VALUES
+    (3, 1, 2, '2026-07-10 16:00:00', '2026-07-13 09:10:00'),
+    (6, 2, 1, '2026-08-04 09:00:00', '2026-08-11 10:00:00'),
+    (9, 3, 4, '2026-09-02 10:00:00', '2026-09-05 22:00:00'),
+    (10, 1, 2, '2026-09-15 17:00:00', NULL);
+
+INSERT INTO hitos_tecnicos (solicitud_id, tipo_hito_id, autor_id, fecha, referencia) VALUES
+    (3, 1, 2, '2026-07-09 17:00:00', 'Pull request 231'),
+    (3, 2, 4, '2026-07-10 15:30:00', 'Deploy en testing del 10/07'),
+    (3, 3, 4, '2026-07-14 11:30:00', 'Deploy en producción del 14/07'),
+    (7, 4, 4, '2026-08-11 11:30:00', 'Consola: observación 1834'),
+    (8, 4, 4, '2026-08-24 09:40:00', 'Limpieza de disco y reinicio de servicios'),
+    (9, 4, 4, '2026-09-05 22:15:00', 'Renovación del certificado'),
+    (10, 1, 2, '2026-09-14 16:00:00', 'Pull request 248'),
+    (10, 2, 4, '2026-09-15 16:30:00', 'Deploy en testing del 15/09');
+
+-- ------------------------------------------------------------------
+-- Reclasificación de la solicitud 5 (CU03, flujo 4a)
+-- Se guarda la clasificación anterior y se actualiza la actual
+-- ------------------------------------------------------------------
+
+START TRANSACTION;
+
+INSERT INTO reclasificaciones (solicitud_id, autor_id, fecha, motivo,
+    tipo_anterior_id, prioridad_anterior_id)
+SELECT solicitud_id, 3, '2026-07-22 11:00:00',
+       'No es un error: la operación no se puede anular después del cierre diario',
+       tipo_solicitud_id, prioridad_id
+FROM solicitudes
+WHERE solicitud_id = 5;
+
+UPDATE solicitudes
+SET tipo_solicitud_id = 1,  -- Consulta funcional
+    prioridad_id = 3        -- Normal
+WHERE solicitud_id = 5;
+
+COMMIT;
+
+-- ------------------------------------------------------------------
+-- Alta de una solicitud completa en una transacción (CU01, paso 6):
+-- la solicitud, su primer cambio de estado y su primera asignación.
+-- El número lo asigna la base (AUTO_INCREMENT).
+-- ------------------------------------------------------------------
+
+START TRANSACTION;
+
+INSERT INTO solicitudes (solicitante_id, producto_id, canal_id, fecha_recepcion,
+    asunto, descripcion)
+VALUES (2, 1, 1, '2026-09-25 10:20:00',
+    'Alta de usuarios para dos auditores nuevos',
+    'Piden crear los usuarios de dos auditores que ingresan la semana próxima.');
+
+SET @nueva = LAST_INSERT_ID();
+
+INSERT INTO cambios_estado (solicitud_id, estado_id, autor_id, fecha)
+VALUES (@nueva, 1, 1, '2026-09-25 10:25:00');
+
+INSERT INTO asignaciones (solicitud_id, integrante_id, asignado_por_id, fecha)
+VALUES (@nueva, 1, 1, '2026-09-25 10:25:00');
+
+COMMIT;
+
+SELECT @nueva AS solicitud_registrada;
+
+-- ------------------------------------------------------------------
+-- Inserción que la base tiene que rechazar (CU06, excepción 3c):
+-- una intervención con tiempo 0. Se espera el error del CHECK.
+-- ------------------------------------------------------------------
+
+INSERT INTO intervenciones (solicitud_id, integrante_id, tipo_intervencion_id,
+    fecha, descripcion, tiempo_horas)
+VALUES (10, 2, 1, '2026-09-16 10:00:00', 'Intervención sin tiempo', 0);

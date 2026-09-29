@@ -1,0 +1,32 @@
+%%{init: {"sequence": {"mirrorActors": false, "actorMargin": 20, "width": 90, "wrapPadding": 6, "messageMargin": 26, "boxMargin": 6}, "themeCSS": ".actor-line { stroke-dasharray: 0 27 4000; } g[data-et=participant] text { transform: translateY(5px); }", "themeVariables": {"actorBorder": "#444444", "actorBkg": "#ffffff", "actorLineColor": "#999999", "signalColor": "#222222", "signalTextColor": "#111111", "labelBoxBorderColor": "#777777", "labelBoxBkgColor": "#eeeeee", "labelTextColor": "#111111", "loopTextColor": "#111111", "noteBkgColor": "#fff5b1", "noteBorderColor": "#999999"}}}%%
+sequenceDiagram
+    actor A as Agente de soporte
+    participant V@{ "type" : "boundary" } as Pantalla Registrar<br/>Intervención
+    participant C@{ "type" : "control" } as Controlador<br/>Registrar Intervención
+    participant S@{ "type" : "entity" } as Solicitud
+    participant I@{ "type" : "entity" } as Intervencion
+    participant IE@{ "type" : "entity" } as ItemEstimacion
+    participant CE@{ "type" : "entity" } as CambioEstado
+
+    A->>+V: Elige registrar<br/>intervención
+    V->>A: Solicita tipo,<br/>descripción y tiempo
+    A->>V: Ingresa los datos<br/>y, si es estimación,<br/>los ítems
+    V->>+C: Envía los datos
+    C->>C: Valida el tiempo: más<br/>de 0 y hasta 24 horas
+    break Tiempo inválido (6.A)
+        C-->>V: Informa tiempo<br/>inválido
+        V-->>A: Pide corregir<br/>el tiempo
+    end
+    C->>+S: Agrega la<br/>intervención
+    S->>I: Crea la<br/>intervención<br/>del integrante
+    opt Estimación (3.B)
+        I->>IE: Agrega cada ítem<br/>con sus horas
+    end
+    opt Primera intervención (10.A)
+        S->>CE: Registra el estado "En curso"
+    end
+    S->>I: Suma los<br/>tiempos de sus<br/>intervenciones
+    I-->>S: Tiempos
+    S-->>-C: Tiempo total
+    C-->>-V: Registro y<br/>tiempo total
+    V-->>-A: Muestra el<br/>tiempo total

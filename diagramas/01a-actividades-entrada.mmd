@@ -1,0 +1,19 @@
+flowchart TD
+    A["Llega un correo a la casilla del producto"] --> B["La herramienta crea una solicitud"]
+    B --> C{"¿Es una consulta de un cliente?"}
+    C -->|No| D["Se descarta la solicitud"]
+    C -->|Sí| E["Soporte funcional se asigna y analiza"]
+    E --> F{"¿El correo trae varios temas?"}
+    F -->|Sí| G["Separa: deja uno y crea solicitudes nuevas"]
+    G --> H{"¿Qué tipo de solicitud es?"}
+    F -->|No| H
+    H -->|Consulta funcional| I["Responde al cliente"]
+    H -->|Pedido de presupuesto| J["Analiza qué necesita el cliente"]
+    H -->|Cambio en el servidor| Y["Soporte técnico analiza el impacto"]
+    H -->|Posible error| M["Deja nota interna y escala. Sigue en la parte 2"]
+    J --> K["Soporte técnico o desarrollo estima"]
+    K --> L["Deja ítems y horas estimadas en nota interna"]
+    Y --> AA["Infraestructura aplica el cambio y avisa al cliente"]
+    I --> Z["Carga su tiempo y resuelve la solicitud"]
+    L --> Z
+    AA --> Z

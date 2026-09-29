@@ -1,0 +1,68 @@
+---
+config:
+  class:
+    padding: 7
+    hideEmptyMembersBox: true
+  themeCSS: ".nodeLabel, .nodeLabel p, .label foreignObject div { line-height: 1.15 !important; }"
+---
+classDiagram
+    direction TB
+    namespace vista {
+        class PantallaRegistrarIntervencion {
+            <<JDialog>>
+            -controlador: ControladorRegistrarIntervencion
+            -cmbTipo: JComboBox~TipoIntervencion~
+            -txtDescripcion: JTextArea
+            -txtTiempo: JTextField
+            -confirmar() void
+            +mostrarTiempoTotal(total: BigDecimal) void
+            +mostrarError(mensaje: String) void
+        }
+    }
+    namespace controlador {
+        class ControladorRegistrarIntervencion {
+            -usuario: Integrante
+            -solicitud: Solicitud
+            -solicitudDAO: DAO~Solicitud~
+            -intervencionDAO: DAO~Intervencion~
+            -cambioEstadoDAO: DAO~CambioEstado~
+            +abrirSolicitud(solicitudId: int) Solicitud
+            +agregarComunicacion(tipo: TipoComunicacion, texto: String) void
+            +registrar(tipo: TipoIntervencion, descripcion: String, tiempoHoras: BigDecimal) BigDecimal
+        }
+    }
+    namespace modelo {
+        class Solicitud {
+            +registrarIntervencion(intervencion: Intervencion) void
+            +calcularTiempoTotal() BigDecimal
+        }
+        class Intervencion {
+            +validar() void
+        }
+        class CambioEstado
+    }
+    namespace persistencia {
+        class ConexionBD {
+            +obtenerConexion()$ Connection
+        }
+        class SolicitudDAO
+        class IntervencionDAO
+        class CambioEstadoDAO
+        class DAO~T~ {
+            <<interface>>
+            +insertar(con: Connection, entidad: T) int
+            +buscarPorId(con: Connection, id: int) T
+        }
+    }
+    PantallaRegistrarIntervencion ..> ControladorRegistrarIntervencion : usa
+    ControladorRegistrarIntervencion ..> ConexionBD : usa
+    ControladorRegistrarIntervencion ..> Solicitud : usa
+    ControladorRegistrarIntervencion ..> Intervencion : crea
+    ControladorRegistrarIntervencion ..> CambioEstado : usa
+    Solicitud <.. SolicitudDAO
+    Intervencion <.. IntervencionDAO
+    CambioEstado <.. CambioEstadoDAO
+    SolicitudDAO ..|> DAO
+    IntervencionDAO ..|> DAO
+    CambioEstadoDAO ..|> DAO
+    ControladorRegistrarIntervencion ..> DAO : usa

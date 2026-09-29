@@ -1,0 +1,317 @@
+-- Sistema de gestión y análisis del soporte técnico y funcional
+-- 01_creacion.sql: base de datos, tablas y usuario de la aplicación
+-- MySQL 8.4
+
+SET NAMES utf8mb4;
+
+DROP DATABASE IF EXISTS gestion_soporte;
+
+CREATE DATABASE gestion_soporte
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_0900_ai_ci;
+
+USE gestion_soporte;
+
+-- ------------------------------------------------------------------
+-- Catálogos: valores cerrados que antes eran enumerados del dominio
+-- ------------------------------------------------------------------
+
+CREATE TABLE roles (
+    rol_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nombre  VARCHAR(40)  NOT NULL,
+    PRIMARY KEY (rol_id),
+    CONSTRAINT roles_nombre_uq UNIQUE (nombre)
+);
+
+CREATE TABLE tipos_solicitud (
+    tipo_solicitud_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nombre             VARCHAR(40)  NOT NULL,
+    PRIMARY KEY (tipo_solicitud_id),
+    CONSTRAINT tipos_solicitud_nombre_uq UNIQUE (nombre)
+);
+
+CREATE TABLE prioridades (
+    prioridad_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nombre        VARCHAR(20)  NOT NULL,
+    criterio      VARCHAR(200) NOT NULL,
+    PRIMARY KEY (prioridad_id),
+    CONSTRAINT prioridades_nombre_uq UNIQUE (nombre)
+);
+
+CREATE TABLE estados (
+    estado_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nombre     VARCHAR(30)  NOT NULL,
+    es_cierre  BOOLEAN      NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (estado_id),
+    CONSTRAINT estados_nombre_uq UNIQUE (nombre)
+);
+
+CREATE TABLE canales (
+    canal_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nombre    VARCHAR(30)  NOT NULL,
+    PRIMARY KEY (canal_id),
+    CONSTRAINT canales_nombre_uq UNIQUE (nombre)
+);
+
+CREATE TABLE tipos_intervencion (
+    tipo_intervencion_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nombre                VARCHAR(40)  NOT NULL,
+    PRIMARY KEY (tipo_intervencion_id),
+    CONSTRAINT tipos_intervencion_nombre_uq UNIQUE (nombre)
+);
+
+CREATE TABLE motivos_espera (
+    motivo_espera_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nombre            VARCHAR(40)  NOT NULL,
+    PRIMARY KEY (motivo_espera_id),
+    CONSTRAINT motivos_espera_nombre_uq UNIQUE (nombre)
+);
+
+CREATE TABLE tipos_hito (
+    tipo_hito_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nombre        VARCHAR(40)  NOT NULL,
+    PRIMARY KEY (tipo_hito_id),
+    CONSTRAINT tipos_hito_nombre_uq UNIQUE (nombre)
+);
+
+-- ------------------------------------------------------------------
+-- Datos maestros
+-- ------------------------------------------------------------------
+
+CREATE TABLE clientes (
+    cliente_id      INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nombre          VARCHAR(100) NOT NULL,
+    dominio_correo  VARCHAR(100) NULL,
+    PRIMARY KEY (cliente_id),
+    CONSTRAINT clientes_nombre_uq UNIQUE (nombre),
+    CONSTRAINT clientes_dominio_uq UNIQUE (dominio_correo)
+);
+
+CREATE TABLE productos (
+    producto_id     INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nombre          VARCHAR(60)  NOT NULL,
+    correo_soporte  VARCHAR(120) NOT NULL,
+    PRIMARY KEY (producto_id),
+    CONSTRAINT productos_nombre_uq UNIQUE (nombre),
+    CONSTRAINT productos_correo_uq UNIQUE (correo_soporte)
+);
+
+-- El módulo se identifica dentro de su producto (entidad débil)
+CREATE TABLE modulos (
+    producto_id  INT UNSIGNED      NOT NULL,
+    modulo_nro   SMALLINT UNSIGNED NOT NULL,
+    nombre       VARCHAR(80)       NOT NULL,
+    PRIMARY KEY (producto_id, modulo_nro),
+    CONSTRAINT modulos_nombre_uq UNIQUE (producto_id, nombre),
+    CONSTRAINT modulos_productos_fk FOREIGN KEY (producto_id)
+        REFERENCES productos (producto_id)
+);
+
+CREATE TABLE solicitantes (
+    solicitante_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    cliente_id      INT UNSIGNED NOT NULL,
+    nombre          VARCHAR(100) NOT NULL,
+    correo          VARCHAR(120) NOT NULL,
+    PRIMARY KEY (solicitante_id),
+    CONSTRAINT solicitantes_correo_uq UNIQUE (correo),
+    CONSTRAINT solicitantes_clientes_fk FOREIGN KEY (cliente_id)
+        REFERENCES clientes (cliente_id)
+);
+
+CREATE TABLE integrantes (
+    integrante_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    rol_id         INT UNSIGNED NOT NULL,
+    nombre         VARCHAR(100) NOT NULL,
+    usuario        VARCHAR(40)  NOT NULL,
+    clave_hash     CHAR(64)     NOT NULL,
+    activo         BOOLEAN      NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (integrante_id),
+    CONSTRAINT integrantes_usuario_uq UNIQUE (usuario),
+    CONSTRAINT integrantes_roles_fk FOREIGN KEY (rol_id)
+        REFERENCES roles (rol_id)
+);
+
+-- ------------------------------------------------------------------
+-- Solicitudes y su recorrido
+-- ------------------------------------------------------------------
+
+-- El cliente no se guarda acá: es el del solicitante (3FN).
+-- Estado actual, fecha de cierre y tiempo total no se guardan: se calculan.
+CREATE TABLE solicitudes (
+    solicitud_id         INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+    numero_origen        INT UNSIGNED      NULL,
+    solicitante_id       INT UNSIGNED      NOT NULL,
+    producto_id          INT UNSIGNED      NOT NULL,
+    modulo_nro           SMALLINT UNSIGNED NULL,
+    canal_id             INT UNSIGNED      NOT NULL,
+    tipo_solicitud_id    INT UNSIGNED      NULL,
+    prioridad_id         INT UNSIGNED      NULL,
+    solicitud_origen_id  INT UNSIGNED      NULL,
+    tipo_vinculo         ENUM('DERIVADA', 'DUPLICADA', 'CONTINUACION') NULL,
+    fecha_recepcion      DATETIME          NOT NULL,
+    asunto               VARCHAR(200)      NOT NULL,
+    descripcion          TEXT              NULL,
+    tiempo_historico     DECIMAL(6,2)      NULL,
+    PRIMARY KEY (solicitud_id),
+    CONSTRAINT solicitudes_numero_origen_uq UNIQUE (numero_origen),
+    CONSTRAINT solicitudes_solicitantes_fk FOREIGN KEY (solicitante_id)
+        REFERENCES solicitantes (solicitante_id),
+    CONSTRAINT solicitudes_productos_fk FOREIGN KEY (producto_id)
+        REFERENCES productos (producto_id),
+    CONSTRAINT solicitudes_modulos_fk FOREIGN KEY (producto_id, modulo_nro)
+        REFERENCES modulos (producto_id, modulo_nro),
+    CONSTRAINT solicitudes_canales_fk FOREIGN KEY (canal_id)
+        REFERENCES canales (canal_id),
+    CONSTRAINT solicitudes_tipos_fk FOREIGN KEY (tipo_solicitud_id)
+        REFERENCES tipos_solicitud (tipo_solicitud_id),
+    CONSTRAINT solicitudes_prioridades_fk FOREIGN KEY (prioridad_id)
+        REFERENCES prioridades (prioridad_id),
+    CONSTRAINT solicitudes_origen_fk FOREIGN KEY (solicitud_origen_id)
+        REFERENCES solicitudes (solicitud_id),
+    CONSTRAINT solicitudes_vinculo_ck CHECK (
+        (solicitud_origen_id IS NULL AND tipo_vinculo IS NULL)
+        OR (solicitud_origen_id IS NOT NULL AND tipo_vinculo IS NOT NULL)),
+    CONSTRAINT solicitudes_tiempo_historico_ck CHECK (tiempo_historico >= 0)
+);
+
+-- El responsable actual es la última asignación
+CREATE TABLE asignaciones (
+    asignacion_id    INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    solicitud_id     INT UNSIGNED NOT NULL,
+    integrante_id    INT UNSIGNED NOT NULL,
+    asignado_por_id  INT UNSIGNED NOT NULL,
+    fecha            DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (asignacion_id),
+    CONSTRAINT asignaciones_solicitudes_fk FOREIGN KEY (solicitud_id)
+        REFERENCES solicitudes (solicitud_id),
+    CONSTRAINT asignaciones_integrantes_fk FOREIGN KEY (integrante_id)
+        REFERENCES integrantes (integrante_id),
+    CONSTRAINT asignaciones_asignado_por_fk FOREIGN KEY (asignado_por_id)
+        REFERENCES integrantes (integrante_id)
+);
+
+-- Cada intervención tiene su propio tiempo, atribuido a quien la hizo
+CREATE TABLE intervenciones (
+    intervencion_id       INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    solicitud_id          INT UNSIGNED NOT NULL,
+    integrante_id         INT UNSIGNED NOT NULL,
+    tipo_intervencion_id  INT UNSIGNED NOT NULL,
+    fecha                 DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    descripcion           VARCHAR(500) NOT NULL,
+    tiempo_horas          DECIMAL(4,2) NOT NULL,
+    PRIMARY KEY (intervencion_id),
+    INDEX intervenciones_fecha_ix (fecha),
+    CONSTRAINT intervenciones_solicitudes_fk FOREIGN KEY (solicitud_id)
+        REFERENCES solicitudes (solicitud_id),
+    CONSTRAINT intervenciones_integrantes_fk FOREIGN KEY (integrante_id)
+        REFERENCES integrantes (integrante_id),
+    CONSTRAINT intervenciones_tipos_fk FOREIGN KEY (tipo_intervencion_id)
+        REFERENCES tipos_intervencion (tipo_intervencion_id),
+    CONSTRAINT intervenciones_tiempo_ck CHECK (tiempo_horas > 0 AND tiempo_horas <= 24)
+);
+
+-- La estimación es la intervención de tipo "Estimación": sus ítems van acá
+CREATE TABLE items_estimacion (
+    intervencion_id  INT UNSIGNED      NOT NULL,
+    item_nro         SMALLINT UNSIGNED NOT NULL,
+    descripcion      VARCHAR(200)      NOT NULL,
+    horas            DECIMAL(5,2)      NOT NULL,
+    PRIMARY KEY (intervencion_id, item_nro),
+    CONSTRAINT items_intervenciones_fk FOREIGN KEY (intervencion_id)
+        REFERENCES intervenciones (intervencion_id),
+    CONSTRAINT items_horas_ck CHECK (horas > 0)
+);
+
+-- Solicitud, autor y fecha salen de la intervención en la que se escribió
+CREATE TABLE comunicaciones (
+    comunicacion_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    intervencion_id  INT UNSIGNED NOT NULL,
+    tipo             ENUM('NOTA_INTERNA', 'RESPUESTA_CLIENTE') NOT NULL,
+    texto            TEXT         NOT NULL,
+    PRIMARY KEY (comunicacion_id),
+    CONSTRAINT comunicaciones_intervenciones_fk FOREIGN KEY (intervencion_id)
+        REFERENCES intervenciones (intervencion_id)
+);
+
+CREATE TABLE cambios_estado (
+    cambio_estado_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    solicitud_id      INT UNSIGNED NOT NULL,
+    estado_id         INT UNSIGNED NOT NULL,
+    autor_id          INT UNSIGNED NOT NULL,
+    fecha             DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    motivo            VARCHAR(300) NULL,
+    PRIMARY KEY (cambio_estado_id),
+    CONSTRAINT cambios_solicitudes_fk FOREIGN KEY (solicitud_id)
+        REFERENCES solicitudes (solicitud_id),
+    CONSTRAINT cambios_estados_fk FOREIGN KEY (estado_id)
+        REFERENCES estados (estado_id),
+    CONSTRAINT cambios_autor_fk FOREIGN KEY (autor_id)
+        REFERENCES integrantes (integrante_id)
+);
+
+-- Una espera abierta tiene la fecha de fin en NULL
+CREATE TABLE esperas (
+    espera_id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    solicitud_id      INT UNSIGNED NOT NULL,
+    motivo_espera_id  INT UNSIGNED NOT NULL,
+    autor_id          INT UNSIGNED NOT NULL,
+    desde             DATETIME     NOT NULL,
+    hasta             DATETIME     NULL,
+    PRIMARY KEY (espera_id),
+    CONSTRAINT esperas_solicitudes_fk FOREIGN KEY (solicitud_id)
+        REFERENCES solicitudes (solicitud_id),
+    CONSTRAINT esperas_motivos_fk FOREIGN KEY (motivo_espera_id)
+        REFERENCES motivos_espera (motivo_espera_id),
+    CONSTRAINT esperas_autor_fk FOREIGN KEY (autor_id)
+        REFERENCES integrantes (integrante_id),
+    CONSTRAINT esperas_periodo_ck CHECK (hasta IS NULL OR hasta >= desde)
+);
+
+CREATE TABLE hitos_tecnicos (
+    hito_id              INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    solicitud_id         INT UNSIGNED NOT NULL,
+    tipo_hito_id         INT UNSIGNED NOT NULL,
+    autor_id             INT UNSIGNED NOT NULL,
+    fecha                DATETIME     NOT NULL,
+    referencia           VARCHAR(120) NULL,
+    solicitud_deploy_id  INT UNSIGNED NULL,
+    PRIMARY KEY (hito_id),
+    CONSTRAINT hitos_solicitudes_fk FOREIGN KEY (solicitud_id)
+        REFERENCES solicitudes (solicitud_id),
+    CONSTRAINT hitos_tipos_fk FOREIGN KEY (tipo_hito_id)
+        REFERENCES tipos_hito (tipo_hito_id),
+    CONSTRAINT hitos_autor_fk FOREIGN KEY (autor_id)
+        REFERENCES integrantes (integrante_id),
+    CONSTRAINT hitos_solicitud_deploy_fk FOREIGN KEY (solicitud_deploy_id)
+        REFERENCES solicitudes (solicitud_id)
+);
+
+-- Guarda la clasificación anterior. La actual queda en solicitudes.
+CREATE TABLE reclasificaciones (
+    reclasificacion_id     INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    solicitud_id           INT UNSIGNED NOT NULL,
+    autor_id               INT UNSIGNED NOT NULL,
+    fecha                  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    motivo                 VARCHAR(300) NOT NULL,
+    tipo_anterior_id       INT UNSIGNED NULL,
+    prioridad_anterior_id  INT UNSIGNED NULL,
+    PRIMARY KEY (reclasificacion_id),
+    CONSTRAINT reclasif_solicitudes_fk FOREIGN KEY (solicitud_id)
+        REFERENCES solicitudes (solicitud_id),
+    CONSTRAINT reclasif_autor_fk FOREIGN KEY (autor_id)
+        REFERENCES integrantes (integrante_id),
+    CONSTRAINT reclasif_tipo_anterior_fk FOREIGN KEY (tipo_anterior_id)
+        REFERENCES tipos_solicitud (tipo_solicitud_id),
+    CONSTRAINT reclasif_prioridad_anterior_fk FOREIGN KEY (prioridad_anterior_id)
+        REFERENCES prioridades (prioridad_id)
+);
+
+-- ------------------------------------------------------------------
+-- Usuario de la aplicación: permisos mínimos y conexión cifrada
+-- Sin DELETE, porque no hay borrado físico de solicitudes (RNF07).
+-- En AWS, el host se restringe al rango de direcciones de la VPN.
+-- ------------------------------------------------------------------
+
+DROP USER IF EXISTS 'app_soporte'@'%';
+CREATE USER 'app_soporte'@'%' IDENTIFIED BY 'Cambiar_en_la_instalacion_2026' REQUIRE SSL;
+GRANT SELECT, INSERT, UPDATE ON gestion_soporte.* TO 'app_soporte'@'%';

@@ -1,0 +1,16 @@
+flowchart TD
+    M["Soporte técnico recibe la solicitud escalada"] --> N["Lee la nota interna, reproduce y revisa el código"]
+    N --> O{"¿Es un error real?"}
+    O -->|No| P["Devuelve a soporte funcional con el análisis"]
+    P --> P2["Soporte funcional responde al cliente y resuelve"]
+    O -->|Sí| Q["Corrige y crea el pull request"]
+    Q --> R["Un compañero revisa el pull request"]
+    R --> S["Pide el deploy en testing por el chat"]
+    S --> T["Infraestructura deploya y deja evidencia en el chat"]
+    T --> U["Avisa al cliente que pruebe en testing"]
+    U --> V{"¿El cliente confirma?"}
+    V -->|No responde| W["La solicitud queda pendiente sin poder avanzar"]
+    W --> W2["Entra a producción de arrastre con otro deploy"]
+    V -->|Sí| X["Merge a producción y segundo deploy"]
+    X --> Z["Avisa al cliente, carga su tiempo y cierra"]
+    W2 --> Z

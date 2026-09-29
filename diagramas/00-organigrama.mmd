@@ -1,0 +1,25 @@
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 25, "rankSpacing": 35}}}%%
+flowchart TD
+    DG["Dirección general"]
+    J1@{ shape: sm-circ }
+    GP["Gestión de proyecto"]
+    IC["Inteligencia comercial"]
+    AD["Administración"]
+    DT["Dirección técnica"]
+    J2@{ shape: sm-circ }
+    DES["Desarrollo<br/>(2 personas)"]
+    SF["Soporte funcional"]
+    STM["Soporte técnico<br/>de Producto A"]
+    STG["Soporte técnico<br/>de Producto B"]
+    INF["Infraestructura<br/>y seguridad"]
+    DG --- J1
+    J1 --- GP
+    J1 --- IC
+    J1 --- AD
+    J1 --- DT
+    DT --- J2
+    J2 --- DES
+    J2 --- SF
+    J2 --- STM
+    J2 --- STG
+    J2 --- INF

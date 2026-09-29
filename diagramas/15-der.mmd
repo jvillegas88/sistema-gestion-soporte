@@ -1,0 +1,183 @@
+---
+config:
+  layout: elk
+  er:
+    useMaxWidth: false
+    entityPadding: 4
+---
+erDiagram
+    %% Generado desde information_schema de gestion_soporte (MySQL 8.4)
+    direction LR
+    asignaciones {
+        INT asignacion_id PK
+        INT solicitud_id FK
+        INT integrante_id FK
+        INT asignado_por_id FK
+        DATETIME fecha
+    }
+    cambios_estado {
+        INT cambio_estado_id PK
+        INT solicitud_id FK
+        INT estado_id FK
+        INT autor_id FK
+        DATETIME fecha
+        VARCHAR(300) motivo
+    }
+    canales {
+        INT canal_id PK
+        VARCHAR(30) nombre UK
+    }
+    clientes {
+        INT cliente_id PK
+        VARCHAR(100) nombre UK
+        VARCHAR(100) dominio_correo UK
+    }
+    comunicaciones {
+        INT comunicacion_id PK
+        INT intervencion_id FK
+        ENUM tipo
+        TEXT texto
+    }
+    esperas {
+        INT espera_id PK
+        INT solicitud_id FK
+        INT motivo_espera_id FK
+        INT autor_id FK
+        DATETIME desde
+        DATETIME hasta
+    }
+    estados {
+        INT estado_id PK
+        VARCHAR(30) nombre UK
+        BOOLEAN es_cierre
+    }
+    hitos_tecnicos {
+        INT hito_id PK
+        INT solicitud_id FK
+        INT tipo_hito_id FK
+        INT autor_id FK
+        DATETIME fecha
+        VARCHAR(120) referencia
+        INT solicitud_deploy_id FK
+    }
+    integrantes {
+        INT integrante_id PK
+        INT rol_id FK
+        VARCHAR(100) nombre
+        VARCHAR(40) usuario UK
+        CHAR(64) clave_hash
+        BOOLEAN activo
+    }
+    intervenciones {
+        INT intervencion_id PK
+        INT solicitud_id FK
+        INT integrante_id FK
+        INT tipo_intervencion_id FK
+        DATETIME fecha
+        VARCHAR(500) descripcion
+        DECIMAL(4,2) tiempo_horas
+    }
+    items_estimacion {
+        INT intervencion_id PK, FK
+        SMALLINT item_nro PK
+        VARCHAR(200) descripcion
+        DECIMAL(5,2) horas
+    }
+    modulos {
+        INT producto_id PK, FK
+        SMALLINT modulo_nro PK
+        VARCHAR(80) nombre
+    }
+    motivos_espera {
+        INT motivo_espera_id PK
+        VARCHAR(40) nombre UK
+    }
+    prioridades {
+        INT prioridad_id PK
+        VARCHAR(20) nombre UK
+        VARCHAR(200) criterio
+    }
+    productos {
+        INT producto_id PK
+        VARCHAR(60) nombre UK
+        VARCHAR(120) correo_soporte UK
+    }
+    reclasificaciones {
+        INT reclasificacion_id PK
+        INT solicitud_id FK
+        INT autor_id FK
+        DATETIME fecha
+        VARCHAR(300) motivo
+        INT tipo_anterior_id FK
+        INT prioridad_anterior_id FK
+    }
+    roles {
+        INT rol_id PK
+        VARCHAR(40) nombre UK
+    }
+    solicitantes {
+        INT solicitante_id PK
+        INT cliente_id FK
+        VARCHAR(100) nombre
+        VARCHAR(120) correo UK
+    }
+    solicitudes {
+        INT solicitud_id PK
+        INT numero_origen UK
+        INT solicitante_id FK
+        INT producto_id FK
+        SMALLINT modulo_nro FK
+        INT canal_id FK
+        INT tipo_solicitud_id FK
+        INT prioridad_id FK
+        INT solicitud_origen_id FK
+        ENUM tipo_vinculo
+        DATETIME fecha_recepcion
+        VARCHAR(200) asunto
+        TEXT descripcion
+        DECIMAL(6,2) tiempo_historico
+    }
+    tipos_hito {
+        INT tipo_hito_id PK
+        VARCHAR(40) nombre UK
+    }
+    tipos_intervencion {
+        INT tipo_intervencion_id PK
+        VARCHAR(40) nombre UK
+    }
+    tipos_solicitud {
+        INT tipo_solicitud_id PK
+        VARCHAR(40) nombre UK
+    }
+    integrantes ||--o{ asignaciones : "asignado_por_id"
+    integrantes ||--o{ asignaciones : "integrante_id"
+    solicitudes ||--o{ asignaciones : "solicitud_id"
+    integrantes ||--o{ cambios_estado : "autor_id"
+    estados ||--o{ cambios_estado : "estado_id"
+    solicitudes ||--o{ cambios_estado : "solicitud_id"
+    intervenciones ||--o{ comunicaciones : "intervencion_id"
+    integrantes ||--o{ esperas : "autor_id"
+    motivos_espera ||--o{ esperas : "motivo_espera_id"
+    solicitudes ||--o{ esperas : "solicitud_id"
+    integrantes ||--o{ hitos_tecnicos : "autor_id"
+    solicitudes |o--o{ hitos_tecnicos : "solicitud_deploy_id"
+    solicitudes ||--o{ hitos_tecnicos : "solicitud_id"
+    tipos_hito ||--o{ hitos_tecnicos : "tipo_hito_id"
+    roles ||--o{ integrantes : "rol_id"
+    integrantes ||--o{ intervenciones : "integrante_id"
+    solicitudes ||--o{ intervenciones : "solicitud_id"
+    tipos_intervencion ||--o{ intervenciones : "tipo_intervencion_id"
+    intervenciones ||--o{ items_estimacion : "intervencion_id"
+    productos ||--o{ modulos : "producto_id"
+    integrantes ||--o{ reclasificaciones : "autor_id"
+    prioridades |o--o{ reclasificaciones : "prioridad_anterior_id"
+    solicitudes ||--o{ reclasificaciones : "solicitud_id"
+    tipos_solicitud |o--o{ reclasificaciones : "tipo_anterior_id"
+    clientes ||--o{ solicitantes : "cliente_id"
+    canales ||--o{ solicitudes : "canal_id"
+    modulos |o--o{ solicitudes : "producto_id, modulo_nro"
+    solicitudes |o--o{ solicitudes : "solicitud_origen_id"
+    prioridades |o--o{ solicitudes : "prioridad_id"
+    productos ||--o{ solicitudes : "producto_id"
+    solicitantes ||--o{ solicitudes : "solicitante_id"
+    tipos_solicitud |o--o{ solicitudes : "tipo_solicitud_id"

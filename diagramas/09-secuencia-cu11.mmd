@@ -1,0 +1,25 @@
+%%{init: {"sequence": {"mirrorActors": false, "actorMargin": 20, "width": 90, "wrapPadding": 6, "messageMargin": 26, "boxMargin": 6}, "themeCSS": ".actor-line { stroke-dasharray: 0 27 4000; } g[data-et=participant] text { transform: translateY(5px); }", "themeVariables": {"actorBorder": "#444444", "actorBkg": "#ffffff", "actorLineColor": "#999999", "signalColor": "#222222", "signalTextColor": "#111111", "labelBoxBorderColor": "#777777", "labelBoxBkgColor": "#eeeeee", "labelTextColor": "#111111", "loopTextColor": "#111111", "noteBkgColor": "#fff5b1", "noteBorderColor": "#999999"}}}%%
+sequenceDiagram
+    actor A as Responsable de gestión
+    participant V@{ "type" : "boundary" } as Pantalla Reporte<br/>por Cliente
+    participant C@{ "type" : "control" } as Controlador<br/>Reporte por Cliente
+    participant CL@{ "type" : "entity" } as Cliente
+    participant S@{ "type" : "entity" } as Solicitud
+    participant I@{ "type" : "entity" } as Intervencion
+    participant E@{ "type" : "entity" } as Espera
+
+    A->>+V: Selecciona el reporte<br/>de esfuerzo por cliente
+    V->>A: Pide el período y,<br/>si quiere, el producto
+    A->>V: Indica los parámetros
+    V->>+C: Pide el reporte<br/>del período
+    C->>+CL: Obtiene los<br/>clientes
+    CL-->>-C: Clientes
+    loop Por cada cliente
+        C->>+S: Busca sus solicitudes del período
+        S->>I: Suma el tiempo<br/>trabajado
+        S->>E: Suma el tiempo en espera
+        S-->>-C: Cantidad, tipos y tiempos
+    end
+    C->>C: Calcula los totales<br/>y aparta las solicitudes<br/>sin cliente (4.A)
+    C-->>-V: Datos del reporte
+    V-->>-A: Muestra el esfuerzo<br/>por cliente

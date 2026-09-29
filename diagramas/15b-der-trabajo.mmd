@@ -1,0 +1,66 @@
+---
+config:
+  layout: elk
+  er:
+    useMaxWidth: false
+    entityPadding: 4
+---
+erDiagram
+    %% Generado desde information_schema de gestion_soporte (MySQL 8.4)
+    direction TB
+    roles {
+        INT rol_id PK
+        VARCHAR(40) nombre UK
+    }
+    integrantes {
+        INT integrante_id PK
+        INT rol_id FK
+        VARCHAR(100) nombre
+        VARCHAR(40) usuario UK
+        CHAR(64) clave_hash
+        BOOLEAN activo
+    }
+    asignaciones {
+        INT asignacion_id PK
+        INT solicitud_id FK
+        INT integrante_id FK
+        INT asignado_por_id FK
+        DATETIME fecha
+    }
+    intervenciones {
+        INT intervencion_id PK
+        INT solicitud_id FK
+        INT integrante_id FK
+        INT tipo_intervencion_id FK
+        DATETIME fecha
+        VARCHAR(500) descripcion
+        DECIMAL(4,2) tiempo_horas
+    }
+    tipos_intervencion {
+        INT tipo_intervencion_id PK
+        VARCHAR(40) nombre UK
+    }
+    items_estimacion {
+        INT intervencion_id PK, FK
+        SMALLINT item_nro PK
+        VARCHAR(200) descripcion
+        DECIMAL(5,2) horas
+    }
+    comunicaciones {
+        INT comunicacion_id PK
+        INT intervencion_id FK
+        ENUM tipo
+        TEXT texto
+    }
+    solicitudes {
+        INT solicitud_id PK
+    }
+    integrantes ||--o{ asignaciones : "asignado_por_id"
+    integrantes ||--o{ asignaciones : "integrante_id"
+    solicitudes ||--o{ asignaciones : "solicitud_id"
+    intervenciones ||--o{ comunicaciones : "intervencion_id"
+    roles ||--o{ integrantes : "rol_id"
+    integrantes ||--o{ intervenciones : "integrante_id"
+    solicitudes ||--o{ intervenciones : "solicitud_id"
+    tipos_intervencion ||--o{ intervenciones : "tipo_intervencion_id"
+    intervenciones ||--o{ items_estimacion : "intervencion_id"

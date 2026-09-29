@@ -1,0 +1,71 @@
++---------------+-------------------------+---------------------+
+| version_mysql | base                    | fecha_ejecucion     |
++---------------+-------------------------+---------------------+
+| 8.4.11        | gestion_soporte_pruebas | 2026-09-29 00:08:28 |
++---------------+-------------------------+---------------------+
++---------+---------------------------------------------+----------+----------+-----------+-----------+---------------------------------------------------------------------------+
+| codigo  | dato                                        | esperado | obtenido | resultado | error_nro | mensaje                                                                   |
++---------+---------------------------------------------+----------+----------+-----------+-----------+---------------------------------------------------------------------------+
+| CP-N-01 | -1 (CEI1)                                   | Rechaza  | Rechaza  | Pasó      |      3819 | Check constraint 'intervenciones_tiempo_ck' is violated.                  |
+| CP-N-01 | -0,01 (CEI1, frontera)                      | Rechaza  | Rechaza  | Pasó      |      3819 | Check constraint 'intervenciones_tiempo_ck' is violated.                  |
+| CP-N-01 | 0 (CEI1, frontera)                          | Rechaza  | Rechaza  | Pasó      |      3819 | Check constraint 'intervenciones_tiempo_ck' is violated.                  |
+| CP-N-01 | 0,01 (CEV1, frontera)                       | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-01 | 1,5 (CEV1)                                  | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-01 | 23,99 (CEV1, frontera)                      | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-01 | 24 (CEV1, frontera)                         | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-01 | 24,01 (CEI2, frontera)                      | Rechaza  | Rechaza  | Pasó      |      3819 | Check constraint 'intervenciones_tiempo_ck' is violated.                  |
+| CP-N-01 | 30 (CEI2)                                   | Rechaza  | Rechaza  | Pasó      |      3819 | Check constraint 'intervenciones_tiempo_ck' is violated.                  |
+| CP-N-01 | 2,125 (CEI3)                                | Rechaza  | Acepta   | Falló     |      NULL | NULL                                                                      |
+| CP-N-02 | Solicitud completa                          | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-02 | Solicitud sin producto                      | Rechaza  | Rechaza  | Pasó      |      1048 | Column 'producto_id' cannot be null                                       |
+| CP-N-03 | Importa el número de origen 5001            | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-03 | Vuelve a importar el 5001                   | Rechaza  | Rechaza  | Pasó      |      1062 | Duplicate entry '5001' for key 'solicitudes.solicitudes_numero_origen_uq' |
+| CP-N-03 | Otra solicitud manual sin número de origen  | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-04 | Módulo 2 de Producto A                      | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-04 | Módulo 3, que es de Producto B              | Rechaza  | Rechaza  | Pasó      |      1452 | Cannot add or update a child row (solicitudes_modulos_fk)                 |
+| CP-N-04 | Módulo sin informar                         | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-05 | Borra la solicitud 1, con intervenciones    | Rechaza  | Rechaza  | Pasó      |      1451 | Cannot delete or update a parent row (intervenciones_solicitudes_fk)      |
+| CP-N-06 | Espera cerrada, fin posterior al inicio     | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-06 | Espera abierta, sin fin                     | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-06 | Espera con fin anterior al inicio           | Rechaza  | Rechaza  | Pasó      |      3819 | Check constraint 'esperas_periodo_ck' is violated.                        |
+| CP-N-07 | Origen y tipo de vínculo                    | Acepta   | Acepta   | Pasó      |      NULL | NULL                                                                      |
+| CP-N-07 | Origen sin tipo de vínculo                  | Rechaza  | Rechaza  | Pasó      |      3819 | Check constraint 'solicitudes_vinculo_ck' is violated.                    |
+| CP-N-07 | Tipo de vínculo sin origen                  | Rechaza  | Rechaza  | Pasó      |      3819 | Check constraint 'solicitudes_vinculo_ck' is violated.                    |
+| DEF-01  | 24,004                                      | Rechaza  | Acepta   | Falló     |      NULL | NULL                                                                      |
++---------+---------------------------------------------+----------+----------+-----------+-----------+---------------------------------------------------------------------------+
++----------------+----------------+
+| dato_informado | valor_guardado |
++----------------+----------------+
+| CP-N-01 0,01   |           0.01 |
+| CP-N-01 1,5    |           1.50 |
+| CP-N-01 23,99  |          23.99 |
+| CP-N-01 24     |          24.00 |
+| CP-N-01 2,125  |           2.13 |
+| DEF-01 24,004  |          24.00 |
++----------------+----------------+
++-----------+--------------------+
+| nombre    | bytes              |
++-----------+--------------------+
+| Análisis  | 416EC3A16C69736973 |
++-----------+--------------------+
++--------------+---------------------------------+----------------+
+| solicitud_id | asunto                          | intervenciones |
++--------------+---------------------------------+----------------+
+|            1 | Solicitud base para las pruebas |              7 |
++--------------+---------------------------------+----------------+
++---------+------------+---------+----------+
+| codigo  | ejecutadas | pasaron | fallaron |
++---------+------------+---------+----------+
+| CP-N-01 |         10 |       9 |        1 |
+| CP-N-02 |          2 |       2 |        0 |
+| CP-N-03 |          3 |       3 |        0 |
+| CP-N-04 |          3 |       3 |        0 |
+| CP-N-05 |          1 |       1 |        0 |
+| CP-N-06 |          3 |       3 |        0 |
+| CP-N-07 |          3 |       3 |        0 |
++---------+------------+---------+----------+
++-------+------------+---------+----------+
+| casos | ejecutadas | pasaron | fallaron |
++-------+------------+---------+----------+
+|     7 |         25 |      24 |        1 |
++-------+------------+---------+----------+

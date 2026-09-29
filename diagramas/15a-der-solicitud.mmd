@@ -1,0 +1,53 @@
+---
+config:
+  layout: elk
+  er:
+    useMaxWidth: false
+    entityPadding: 4
+---
+erDiagram
+    %% Generado desde information_schema de gestion_soporte (MySQL 8.4)
+    direction TB
+    clientes {
+        INT cliente_id PK
+        VARCHAR(100) nombre UK
+        VARCHAR(100) dominio_correo UK
+    }
+    solicitantes {
+        INT solicitante_id PK
+        INT cliente_id FK
+        VARCHAR(100) nombre
+        VARCHAR(120) correo UK
+    }
+    productos {
+        INT producto_id PK
+        VARCHAR(60) nombre UK
+        VARCHAR(120) correo_soporte UK
+    }
+    modulos {
+        INT producto_id PK, FK
+        SMALLINT modulo_nro PK
+        VARCHAR(80) nombre
+    }
+    solicitudes {
+        INT solicitud_id PK
+        INT numero_origen UK
+        INT solicitante_id FK
+        INT producto_id FK
+        SMALLINT modulo_nro FK
+        INT canal_id FK
+        INT tipo_solicitud_id FK
+        INT prioridad_id FK
+        INT solicitud_origen_id FK
+        ENUM tipo_vinculo
+        DATETIME fecha_recepcion
+        VARCHAR(200) asunto
+        TEXT descripcion
+        DECIMAL(6,2) tiempo_historico
+    }
+    productos ||--o{ modulos : "producto_id"
+    clientes ||--o{ solicitantes : "cliente_id"
+    modulos |o--o{ solicitudes : "producto_id, modulo_nro"
+    solicitudes |o--o{ solicitudes : "solicitud_origen_id"
+    productos ||--o{ solicitudes : "producto_id"
+    solicitantes ||--o{ solicitudes : "solicitante_id"

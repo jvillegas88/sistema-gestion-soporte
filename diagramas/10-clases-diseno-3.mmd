@@ -1,0 +1,107 @@
+---
+config:
+  class:
+    padding: 7
+  themeCSS: ".nodeLabel, .nodeLabel p, .label foreignObject div { line-height: 1.15 !important; } .cluster rect { fill: none !important; stroke: none !important; } .cluster-label { display: none !important; }"
+---
+classDiagram
+    direction LR
+    namespace fila1 {
+        class Canal {
+            <<enumeration>>
+            CORREO
+            DETECCION_INTERNA
+            +getId() int
+            +getNombre() String
+        }
+        class TipoSolicitud {
+            <<enumeration>>
+            CONSULTA_FUNCIONAL
+            ERROR_DESARROLLO
+            ERROR_INFRAESTRUCTURA
+            PEDIDO_PRESUPUESTO
+            PEDIDO_INFRAESTRUCTURA
+            +getId() int
+            +getNombre() String
+            +esError() boolean
+        }
+        class Prioridad {
+            <<enumeration>>
+            URGENTE
+            ALTA
+            NORMAL
+            BAJA
+            +getId() int
+            +getNombre() String
+            +getCriterio() String
+        }
+        class Rol {
+            <<enumeration>>
+            SOPORTE_FUNCIONAL
+            SOPORTE_TECNICO
+            INFRAESTRUCTURA
+            DESARROLLO
+            RESPONSABLE_GESTION
+            +getId() int
+            +getNombre() String
+        }
+    }
+    namespace fila2 {
+        class Estado {
+            <<enumeration>>
+            NUEVA
+            EN_CURSO
+            EN_ESPERA
+            RESUELTA
+            CERRADA_SIN_CONFIRMACION
+            CANCELADA
+            DESCARTADA
+            DUPLICADA
+            +getId() int
+            +getNombre() String
+            +esCierre() boolean
+        }
+        class TipoIntervencion {
+            <<enumeration>>
+            ANALISIS
+            RESPUESTA_CLIENTE
+            CORRECCION
+            REVISION_CODIGO
+            DEPLOY
+            CAMBIO_SERVIDOR
+            ESTIMACION
+            REUNION_CLIENTE
+            +getId() int
+            +getNombre() String
+        }
+        class MotivoEspera {
+            <<enumeration>>
+            CLIENTE
+            INTERNA
+            VENTANA_DEPLOY
+            +getId() int
+            +getNombre() String
+        }
+        class TipoHito {
+            <<enumeration>>
+            CORRECCION
+            PUBLICACION_TESTING
+            PUBLICACION_PRODUCCION
+            INTERVENCION_SERVIDOR
+            +getId() int
+            +getNombre() String
+        }
+    }
+    namespace fila3 {
+        class TipoVinculo {
+            <<enumeration>>
+            DERIVADA
+            DUPLICADA
+            CONTINUACION
+        }
+        class TipoComunicacion {
+            <<enumeration>>
+            NOTA_INTERNA
+            RESPUESTA_CLIENTE
+        }
+    }

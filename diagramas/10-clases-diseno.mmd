@@ -1,0 +1,99 @@
+---
+config:
+  layout: elk
+  class:
+    padding: 7
+  themeCSS: ".nodeLabel, .nodeLabel p, .label foreignObject div { line-height: 1.15 !important; }"
+---
+classDiagram
+    direction TB
+    class Cliente {
+        -id: int
+        -nombre: String
+        -dominioCorreo: String
+        +correspondeAlCorreo(correo: String) boolean
+    }
+    class Solicitante {
+        -id: int
+        -cliente: Cliente
+        -nombre: String
+        -correo: String
+        +getCliente() Cliente
+    }
+    class Producto {
+        -id: int
+        -nombre: String
+        -correoSoporte: String
+        -modulos: List~Modulo~
+        +tieneModulo(modulo: Modulo) boolean
+    }
+    class Modulo {
+        -producto: Producto
+        -numero: int
+        -nombre: String
+        +getProducto() Producto
+    }
+    class Integrante {
+        -id: int
+        -rol: Rol
+        -nombre: String
+        -usuario: String
+        -claveHash: String
+        -activo: boolean
+        +verificarClave(clave: String) boolean
+        +estaActivo() boolean
+        +getRol() Rol
+    }
+    class Solicitud {
+        -id: int
+        -numeroOrigen: Integer
+        -solicitante: Solicitante
+        -producto: Producto
+        -modulo: Modulo
+        -canal: Canal
+        -tipo: TipoSolicitud
+        -prioridad: Prioridad
+        -solicitudOrigen: Solicitud
+        -tipoVinculo: TipoVinculo
+        -fechaRecepcion: LocalDateTime
+        -asunto: String
+        -descripcion: String
+        -tiempoHistorico: BigDecimal
+        -intervenciones: List~Intervencion~
+        -asignaciones: List~Asignacion~
+        -cambiosEstado: List~CambioEstado~
+        -esperas: List~Espera~
+        -hitos: List~HitoTecnico~
+        -reclasificaciones: List~Reclasificacion~
+        +getCliente() Cliente
+        +getEstadoActual() Estado
+        +getResponsable() Integrante
+        +getFechaCierre() LocalDateTime
+        +calcularTiempoTotal() BigDecimal
+        +getEsperaAbierta() Espera
+        +getEstimacion() Estimacion
+        +getHistorial() List~RegistroSolicitud~
+        +registrar(autor: Integrante) void
+        +clasificar(tipo: TipoSolicitud, prioridad: Prioridad, autor: Integrante, motivo: String) void
+        +asignarModulo(modulo: Modulo) void
+        +asignar(integrante: Integrante, autor: Integrante) void
+        +registrarIntervencion(intervencion: Intervencion) void
+        +abrirEspera(motivo: MotivoEspera, autor: Integrante) void
+        +cerrarEspera(autor: Integrante) void
+        +registrarHito(hito: HitoTecnico) void
+        +validarCierre() boolean
+        +getFaltantesCierre() List~String~
+        +cerrar(cierre: Estado, autor: Integrante, motivo: String) void
+        +reabrir(autor: Integrante, motivo: String) void
+        +descartar(autor: Integrante, motivo: String) void
+        +marcarDuplicada(original: Solicitud, autor: Integrante) void
+        +vincular(origen: Solicitud, vinculo: TipoVinculo) void
+        -cambiarEstado(nuevo: Estado, autor: Integrante, motivo: String) void
+    }
+    Cliente "1" <-- "0..*" Solicitante
+    Producto "1" *-- "0..*" Modulo
+    Solicitante "1" <-- "0..*" Solicitud
+    Producto "1" <-- "0..*" Solicitud
+    Modulo "0..1" <-- "0..*" Solicitud
+    Integrante "0..1" <-- "0..*" Solicitud : /responsable
+    Solicitud "0..1" <-- "0..*" Solicitud : solicitudOrigen

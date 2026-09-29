@@ -1,0 +1,102 @@
+classDiagram
+    class Cliente {
+        +String nombre
+        +String dominioCorreo
+    }
+    class Producto {
+        +String nombre
+    }
+    class Instancia {
+        +String version
+        +String sistemaOperativo
+    }
+    class Modulo {
+        +String nombre
+    }
+    class Solicitud {
+        +int numero
+        +int numeroOrigen
+        +Canal canal
+        +Date fechaRecepcion
+        +String asunto
+        +String descripcion
+        +TipoSolicitud tipo
+        +Prioridad prioridad
+        +Estado /estado
+        +Date /fechaCierre
+        +decimal /tiempoTotal
+    }
+    class Solicitante {
+        +String nombre
+        +String correo
+    }
+    class Integrante {
+        +String nombre
+        +Rol rol
+    }
+    class Asignacion {
+        +Date fecha
+    }
+    class Reclasificacion {
+        +Date fecha
+        +String motivo
+        +TipoSolicitud tipoAnterior
+        +Prioridad prioridadAnterior
+    }
+    class Intervencion {
+        +Date fecha
+        +TipoIntervencion tipo
+        +String descripcion
+        +decimal tiempoDedicado
+    }
+    class Comunicacion {
+        +TipoComunicacion tipo
+        +Date fecha
+        +String texto
+    }
+    class Espera {
+        +MotivoEspera motivo
+        +Date desde
+        +Date hasta
+    }
+    class CambioEstado {
+        +Estado estado
+        +Date fecha
+        +String motivo
+    }
+    class HitoTecnico {
+        +TipoHito tipo
+        +Date fecha
+        +String referencia
+    }
+    class Estimacion {
+        +decimal /horasTotales
+    }
+    class ItemEstimacion {
+        +String descripcion
+        +decimal horas
+    }
+
+    Cliente "1" -- "0..*" Instancia
+    Producto "1" -- "0..*" Instancia
+    Producto "1" -- "0..*" Modulo
+    Cliente "1" -- "0..*" Solicitante
+    Producto "1" -- "0..*" Solicitud
+    Modulo "0..1" -- "0..*" Solicitud
+    Solicitante "1" -- "0..*" Solicitud
+    Solicitud "origen 0..1" -- "derivadas 0..*" Solicitud
+    Solicitud "1" -- "0..*" Asignacion
+    Integrante "1" -- "0..*" Asignacion
+    Solicitud "1" -- "0..*" Reclasificacion
+    Integrante "1" -- "0..*" Reclasificacion
+    Solicitud "1" -- "0..*" Intervencion
+    Integrante "1" -- "0..*" Intervencion
+    Intervencion "1" -- "0..*" Comunicacion
+    Solicitud "1" -- "0..*" Espera
+    Integrante "1" -- "0..*" Espera
+    Solicitud "1" -- "0..*" CambioEstado
+    Integrante "1" -- "0..*" CambioEstado
+    Solicitud "1" -- "0..*" HitoTecnico
+    Integrante "1" -- "0..*" HitoTecnico
+    Intervencion "1" -- "0..1" Estimacion
+    Estimacion "1" -- "1..*" ItemEstimacion

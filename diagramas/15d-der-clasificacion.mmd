@@ -1,0 +1,45 @@
+---
+config:
+  layout: elk
+  er:
+    useMaxWidth: false
+    entityPadding: 4
+---
+erDiagram
+    %% Generado desde information_schema de gestion_soporte (MySQL 8.4)
+    direction TB
+    canales {
+        INT canal_id PK
+        VARCHAR(30) nombre UK
+    }
+    tipos_solicitud {
+        INT tipo_solicitud_id PK
+        VARCHAR(40) nombre UK
+    }
+    prioridades {
+        INT prioridad_id PK
+        VARCHAR(20) nombre UK
+        VARCHAR(200) criterio
+    }
+    reclasificaciones {
+        INT reclasificacion_id PK
+        INT solicitud_id FK
+        INT autor_id FK
+        DATETIME fecha
+        VARCHAR(300) motivo
+        INT tipo_anterior_id FK
+        INT prioridad_anterior_id FK
+    }
+    solicitudes {
+        INT solicitud_id PK
+    }
+    integrantes {
+        INT integrante_id PK
+    }
+    integrantes ||--o{ reclasificaciones : "autor_id"
+    prioridades |o--o{ reclasificaciones : "prioridad_anterior_id"
+    solicitudes ||--o{ reclasificaciones : "solicitud_id"
+    tipos_solicitud |o--o{ reclasificaciones : "tipo_anterior_id"
+    canales ||--o{ solicitudes : "canal_id"
+    prioridades |o--o{ solicitudes : "prioridad_id"
+    tipos_solicitud |o--o{ solicitudes : "tipo_solicitud_id"

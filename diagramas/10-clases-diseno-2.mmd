@@ -1,0 +1,96 @@
+---
+config:
+  layout: elk
+  class:
+    padding: 7
+  themeCSS: ".nodeLabel, .nodeLabel p, .label foreignObject div { line-height: 1.15 !important; }"
+---
+classDiagram
+    direction LR
+    class Solicitud
+    class Integrante
+    class RegistroSolicitud {
+        <<abstract>>
+        #id: int
+        #solicitud: Solicitud
+        #autor: Integrante
+        #fecha: LocalDateTime
+        +getSolicitud() Solicitud
+        +getAutor() Integrante
+        +getFecha() LocalDateTime
+        +validar() void*
+    }
+    class Intervencion {
+        -tipo: TipoIntervencion
+        -descripcion: String
+        -tiempoHoras: BigDecimal
+        -comunicaciones: List~Comunicacion~
+        -estimacion: Estimacion
+        +agregar(comunicacion: Comunicacion) void
+        +setEstimacion(estimacion: Estimacion) void
+        +tieneRespuestaAlCliente() boolean
+        +getTiempoHoras() BigDecimal
+        +validar() void
+    }
+    class Asignacion {
+        -asignado: Integrante
+        +getAsignado() Integrante
+        +validar() void
+    }
+    class CambioEstado {
+        -estado: Estado
+        -motivo: String
+        +getEstado() Estado
+        +validar() void
+    }
+    class Espera {
+        -motivo: MotivoEspera
+        -hasta: LocalDateTime
+        +estaAbierta() boolean
+        +cerrar(hasta: LocalDateTime) void
+        +calcularDuracion() Duration
+        +validar() void
+    }
+    class HitoTecnico {
+        -tipo: TipoHito
+        -referencia: String
+        -solicitudDeploy: Solicitud
+        +getTipo() TipoHito
+        +validar() void
+    }
+    class Reclasificacion {
+        -motivo: String
+        -tipoAnterior: TipoSolicitud
+        -prioridadAnterior: Prioridad
+        +validar() void
+    }
+    class Comunicacion {
+        -id: int
+        -tipo: TipoComunicacion
+        -texto: String
+        +getTipo() TipoComunicacion
+        +getTexto() String
+    }
+    class Estimacion {
+        -items: List~ItemEstimacion~
+        +agregarItem(item: ItemEstimacion) void
+        +calcularHorasTotales() BigDecimal
+        +tieneItems() boolean
+    }
+    class ItemEstimacion {
+        -numero: int
+        -descripcion: String
+        -horas: BigDecimal
+        +getHoras() BigDecimal
+    }
+    Solicitud "1" *-- "0..*" RegistroSolicitud
+    Integrante "1" <-- "0..*" RegistroSolicitud : autor
+    RegistroSolicitud <|-- Intervencion
+    RegistroSolicitud <|-- Asignacion
+    RegistroSolicitud <|-- CambioEstado
+    RegistroSolicitud <|-- Espera
+    RegistroSolicitud <|-- HitoTecnico
+    RegistroSolicitud <|-- Reclasificacion
+    Comunicacion "0..*" --* "1" Intervencion
+    Estimacion "0..1" --* "1" Intervencion
+    ItemEstimacion "1..*" --* "1" Estimacion

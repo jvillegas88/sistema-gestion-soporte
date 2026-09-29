@@ -1,0 +1,14 @@
+# Compilados de Java
+*.class
+target/
+build/
+out/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Datos de la organización: nunca se versionan
+*.csv
+datos-crudos/

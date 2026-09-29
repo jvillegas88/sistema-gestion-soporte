@@ -1,0 +1,33 @@
+-- Prueba del usuario de la aplicación (app_soporte), conectado con TLS
+--------------
+SHOW GRANTS
+--------------
+
++--------------------------------------------------------------------------+
+| Grants for app_soporte@%                                                 |
++--------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `app_soporte`@`%`                                  |
+| GRANT SELECT, INSERT, UPDATE ON `gestion_soporte`.* TO `app_soporte`@`%` |
++--------------------------------------------------------------------------+
+2 rows in set (0.00 sec)
+
+--------------
+SHOW STATUS LIKE 'Ssl_cipher'
+--------------
+
++---------------+------------------------+
+| Variable_name | Value                  |
++---------------+------------------------+
+| Ssl_cipher    | TLS_AES_128_GCM_SHA256 |
++---------------+------------------------+
+1 row in set (0.00 sec)
+
+--------------
+DELETE FROM items_estimacion WHERE intervencion_id = 13 AND item_nro = 4
+--------------
+
+ERROR 1142 (42000) at line 3: DELETE command denied to user 'app_soporte'@'127.0.0.1' for table 'items_estimacion'
+Bye
+
+-- El mismo usuario sin cifrado (--ssl-mode=DISABLED): REQUIRE SSL lo rechaza
+ERROR 1045 (28000): Access denied for user 'app_soporte'@'127.0.0.1' (using password: YES)

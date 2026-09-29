@@ -1,0 +1,19 @@
+flowchart TD
+    subgraph EST["Estación de trabajo del integrante (remota)"]
+        V["Capa de presentación<br/>Vistas Java"]
+        C["Capa de control<br/>Controladores"]
+        M["Capa de negocio<br/>Modelo de dominio"]
+        D["Capa de acceso a datos<br/>DAO con JDBC"]
+    end
+    subgraph AWS["Red privada de AWS"]
+        BD[("MySQL 8.4")]
+        NOTA["Sin acceso directo<br/>desde internet"]
+    end
+    CSV["Archivo CSV exportado<br/>de la herramienta actual"]
+    V --> C
+    C --> M
+    M --> D
+    D -->|"JDBC con TLS<br/>por internet y VPN"| BD
+    CSV -->|Importación| C
+    classDef nota fill:none,stroke:none,font-style:italic
+    class NOTA nota

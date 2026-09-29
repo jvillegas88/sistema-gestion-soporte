@@ -1,0 +1,49 @@
+flowchart LR
+    A02(["A02 Soporte funcional"])
+    A03(["A03 Soporte técnico"])
+    A04(["A04 Infraestructura"])
+    A05(["A05 Desarrollo"])
+    A06(["A06 Responsable de gestión"])
+
+    subgraph SISTEMA["Sistema de gestión y análisis del soporte"]
+        CU01(["CU01 Registrar solicitud"])
+        CU02(["CU02 Importar histórico"])
+        CU03(["CU03 Clasificar solicitud"])
+        CU04(["CU04 Separar solicitud"])
+        CU05(["CU05 Escalar solicitud"])
+        CU06(["CU06 Registrar intervención y tiempo"])
+        CU07(["CU07 Registrar espera y cambio de estado"])
+        CU08(["CU08 Registrar hito técnico"])
+        CU09(["CU09 Cerrar solicitud"])
+        CU10(["CU10 Buscar antecedentes"])
+        CU11(["CU11 Consultar reporte por cliente"])
+        CU12(["CU12 Consultar reporte por integrante"])
+    end
+
+    A02 --- CU01
+    A02 --- CU02
+    A02 --- CU03
+    A02 --- CU04
+    A02 --- CU05
+    A02 --- CU06
+    A02 --- CU07
+    A02 --- CU09
+    A02 --- CU10
+    A03 --- CU05
+    A03 --- CU06
+    A03 --- CU07
+    A03 --- CU08
+    A03 --- CU09
+    A03 --- CU10
+    A04 --- CU06
+    A04 --- CU08
+    A04 --- CU09
+    A05 --- CU06
+    A05 --- CU10
+    A06 --- CU11
+    A06 --- CU12
+
+    CU04 -.->|include| CU01
+    CU05 -.->|include| CU06
+    CU09 -.->|include| CU06
+    CU03 -.->|extend| CU01

@@ -1,0 +1,31 @@
+%%{init: {"sequence": {"mirrorActors": false, "actorMargin": 20, "width": 90, "wrapPadding": 6, "messageMargin": 26, "boxMargin": 6}, "themeCSS": ".actor-line { stroke-dasharray: 0 27 4000; } g[data-et=participant] text { transform: translateY(5px); }", "themeVariables": {"actorBorder": "#444444", "actorBkg": "#ffffff", "actorLineColor": "#999999", "signalColor": "#222222", "signalTextColor": "#111111", "labelBoxBorderColor": "#777777", "labelBoxBkgColor": "#eeeeee", "labelTextColor": "#111111", "loopTextColor": "#111111", "noteBkgColor": "#fff5b1", "noteBorderColor": "#999999"}}}%%
+sequenceDiagram
+    actor A as Soporte funcional
+    participant V@{ "type" : "boundary" } as Pantalla Registrar<br/>Solicitud
+    participant C@{ "type" : "control" } as Controlador<br/>Registrar Solicitud
+    participant SO@{ "type" : "entity" } as Solicitante
+    participant S@{ "type" : "entity" } as Solicitud
+    participant AS@{ "type" : "entity" } as Asignacion
+    participant CE@{ "type" : "entity" } as CambioEstado
+
+    A->>+V: Selecciona<br/>registrar solicitud
+    V->>A: Solicita los datos
+    A->>V: Ingresa solicitante,<br/>producto, canal, fecha,<br/>asunto y descripción
+    V->>+C: Envía los datos
+    C->>+SO: Busca el<br/>solicitante
+    SO-->>-C: Solicitante<br/>y su cliente
+    C->>C: Verifica cliente<br/>y producto
+    break Falta un dato (4.A)
+        C-->>V: Informa qué falta
+        V-->>A: Muestra qué falta
+    end
+    C-->>-V: Datos válidos
+    V->>A: Muestra el cliente<br/>y pide confirmar
+    A->>V: Confirma el alta
+    V->>+C: Confirma el alta
+    C->>+S: Crea la solicitud
+    S->>CE: Registra el estado "Nueva"
+    S->>AS: Asigna a quien<br/>la registra
+    S-->>-C: Número de solicitud
+    C-->>-V: Número asignado
+    V-->>-A: Muestra el número
