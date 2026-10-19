@@ -31,6 +31,11 @@ public enum TipoSolicitud implements Catalogo {
         return this == ERROR_DESARROLLO || this == ERROR_INFRAESTRUCTURA;
     }
 
+    /** Los tipos en los que se registran hitos técnicos, según la precondición de CU08. */
+    public boolean admiteHitos() {
+        return esError() || this == PEDIDO_INFRAESTRUCTURA;
+    }
+
     @Override
     public String toString() {
         return nombre;

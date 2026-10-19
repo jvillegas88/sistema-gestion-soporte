@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.AbstractButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -28,6 +29,7 @@ import javax.swing.SwingUtilities;
 import sgs.Aplicacion;
 import sgs.controlador.ControladorReportes;
 import sgs.modelo.Integrante;
+import sgs.modelo.Solicitud;
 import sgs.modelo.catalogo.Rol;
 import sgs.modelo.excepcion.ReglaNegocioException;
 import sgs.persistencia.DatosMaestros;
@@ -87,7 +89,7 @@ public final class PruebaInterfaz {
         prN01();
         int numero = prI01();
         prI02();
-        clasificarSolicitud12();
+        clasificarYRegistrarHito12();
         prS03();
         escribir("");
         escribir("Solicitud creada por PR-I-01: " + numero);
@@ -189,20 +191,9 @@ public final class PruebaInterfaz {
         }
         String total = m.leerEsperando(solicitud, "Tiempo total", "49,5 h");
 
-        // CU08, alternativa 6.A: la publicación en producción sin la de testing pide confirmación
-        m.presionar(solicitud, "Registrar hito...");
-        Window cu08 = m.esperarVentana("Registrar hito técnico");
-        m.elegir(cu08, "Tipo de hito", "Publicación en producción");
-        m.presionar(cu08, "Registrar hito");
-        JDialog aviso = m.esperarMensaje();
-        String textoAviso = m.textoMensaje(aviso);
-        m.responder(aviso, "No");
-        Manejador.pausa(300);
-        verificar("CU08 producción sin testing (6.A)", textoAviso + (m.estaAbierta(cu08) ? " / No registra" : " / Registra"),
-                "La solicitud no tiene registrada la publicación en testing. "
-                        + "¿Registrar igual la publicación en producción? / No registra");
-        m.presionar(cu08, "Cancelar");
-        m.esperarCierre(cu08);
+        // CU08, precondición: la solicitud 12 todavía no tiene tipo, así que no admite hitos
+        verificar("CU08 sin clasificar", estadoBoton(solicitud, "Registrar hito..."),
+                "deshabilitado (" + Solicitud.MENSAJE_HITOS + ")");
 
         m.presionar(solicitud, "Volver");
         m.esperarCierre(solicitud);
@@ -380,12 +371,12 @@ public final class PruebaInterfaz {
     }
 
     // ------------------------------------------------------------------
-    // CU03 sobre la solicitud 12, que quedó sin clasificar
+    // CU03 y CU08 sobre la solicitud 12, que quedó sin clasificar
     // ------------------------------------------------------------------
 
-    private void clasificarSolicitud12() {
+    private void clasificarYRegistrarHito12() {
         escribir("");
-        escribir("CU03 sobre la solicitud 12 (captura)");
+        escribir("CU03 y CU08 sobre la solicitud 12");
         iniciarSesion("lgomez");
         Window solicitud = abrirSolicitud(12);
         m.presionar(solicitud, "Clasificar...");
@@ -398,6 +389,33 @@ public final class PruebaInterfaz {
         m.esperarCierre(cu03);
         verificar("CU03 clasifica", m.leerEsperando(solicitud, "Tipo", "Pedido de infraestructura"), "Pedido de infraestructura");
         cerrarPantalla(solicitud);
+
+        // CU08, alternativa 6.A: ya clasificada como pedido de infraestructura, admite hitos, y la
+        // publicación en producción sin la de testing pide confirmación
+        iniciarSesion("pmedina");
+        solicitud = abrirSolicitud(12);
+        m.presionar(solicitud, "Registrar hito...");
+        Window cu08 = m.esperarVentana("Registrar hito técnico");
+        m.elegir(cu08, "Tipo de hito", "Publicación en producción");
+        m.presionar(cu08, "Registrar hito");
+        JDialog aviso = m.esperarMensaje();
+        String textoAviso = m.textoMensaje(aviso);
+        m.responder(aviso, "No");
+        Manejador.pausa(300);
+        verificar("CU08 producción sin testing (6.A)", textoAviso + (m.estaAbierta(cu08) ? " / No registra" : " / Registra"),
+                "La solicitud no tiene registrada la publicación en testing. "
+                        + "¿Registrar igual la publicación en producción? / No registra");
+        m.presionar(cu08, "Cancelar");
+        m.esperarCierre(cu08);
+        cerrarPantalla(solicitud);
+    }
+
+    /** "habilitado", o "deshabilitado" con el motivo que muestra el botón. */
+    private String estadoBoton(Window ventana, String texto) {
+        return Manejador.enEDT(() -> {
+            AbstractButton b = Manejador.buscar(ventana, AbstractButton.class, x -> texto.equals(x.getText()));
+            return b.isEnabled() ? "habilitado" : "deshabilitado (" + b.getToolTipText() + ")";
+        });
     }
 
     // ------------------------------------------------------------------

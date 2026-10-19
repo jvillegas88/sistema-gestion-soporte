@@ -222,7 +222,8 @@ public final class PantallaSolicitud extends Pantalla {
         habilitar(btnIntervencion, intervenir, rol.esAgente(), "Solo los agentes de soporte");
         habilitar(btnAbrirEspera, abrirEspera, rol.esAgente(), "Solo los agentes de soporte");
         habilitar(btnTerminarEspera, terminarEspera, rol.esAgente(), "Solo los agentes de soporte");
-        habilitar(btnHito, hito, rol.puedeRegistrarHitos(), "Registran hitos soporte técnico e infraestructura");
+        habilitar(btnHito, hito, rol.puedeRegistrarHitos() && solicitud.admiteHitos(), rol.puedeRegistrarHitos()
+                ? Solicitud.MENSAJE_HITOS : "Registran hitos soporte técnico e infraestructura");
         habilitar(btnCerrar, cerrar, esResponsable, "Solo el responsable de la solicitud la puede cerrar");
         habilitar(btnReabrir, reabrir, rol.esAgente(), "Solo los agentes de soporte");
         lblSituacion.setText(situacion);

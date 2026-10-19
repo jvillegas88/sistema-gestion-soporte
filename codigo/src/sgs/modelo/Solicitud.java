@@ -32,6 +32,8 @@ import sgs.modelo.excepcion.ReglaNegocioException;
 public class Solicitud {
 
     public static final int LARGO_ASUNTO = 200;
+    public static final String MENSAJE_HITOS =
+            "Los hitos técnicos se registran en errores de desarrollo, errores de infraestructura y pedidos de infraestructura";
 
     private int id;
     private final Integer numeroOrigen;
@@ -196,6 +198,11 @@ public class Solicitud {
     public boolean estaAbierta() {
         Estado estado = getEstadoActual();
         return estado != null && !estado.esCierre();
+    }
+
+    /** True si el tipo admite hitos técnicos (precondición de CU08). Sin clasificar, no los admite. */
+    public boolean admiteHitos() {
+        return tipo != null && tipo.admiteHitos();
     }
 
     /** El integrante de la última asignación. */
@@ -423,9 +430,12 @@ public class Solicitud {
         cambiarEstado(Estado.EN_CURSO, autor, null);
     }
 
-    /** Agrega un hito técnico (CU08). */
+    /** Agrega un hito técnico (CU08), si la solicitud está abierta y su tipo lo admite. */
     public void registrarHito(HitoTecnico hito) throws ReglaNegocioException {
         exigirAbierta("registrar un hito");
+        if (!admiteHitos()) {
+            throw new ReglaNegocioException(MENSAJE_HITOS);
+        }
         if (hito.getSolicitud() != this) {
             throw new IllegalArgumentException("El hito es de otra solicitud");
         }
