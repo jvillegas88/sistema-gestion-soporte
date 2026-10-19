@@ -17,7 +17,7 @@ INSERT INTO roles (rol_id, nombre) VALUES
     (2, 'Soporte técnico'),
     (3, 'Infraestructura'),
     (4, 'Desarrollo'),
-    (5, 'Gestión');
+    (5, 'Responsable de gestión');
 
 INSERT INTO tipos_solicitud (tipo_solicitud_id, nombre) VALUES
     (1, 'Consulta funcional'),
