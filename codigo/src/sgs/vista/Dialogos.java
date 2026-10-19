@@ -9,7 +9,8 @@ import sgs.modelo.excepcion.ReglaNegocioException;
 /**
  * Mensajes al usuario y ejecución de las acciones de las pantallas. Cada acción se ejecuta
  * dentro de un try-catch que separa los dos tipos de problema: una regla del negocio que no se
- * cumple, que el usuario puede corregir, y un problema con la base de datos.
+ * cumple, que el usuario puede corregir, y un problema con la base de datos. Un error que no
+ * es ninguno de los dos, que sería un defecto del programa, también se informa.
  */
 public final class Dialogos {
 
@@ -37,6 +38,11 @@ public final class Dialogos {
         } catch (SQLException e) {
             error(padre, "No se pudo completar la operación por un problema con la base de datos.\n"
                     + "Verificá la conexión e intentá de nuevo.\n\nDetalle: " + e.getMessage());
+        } catch (RuntimeException e) {
+            // Se deja el detalle en la consola para poder corregirlo
+            e.printStackTrace();
+            error(padre, "Ocurrió un error inesperado y la operación no se completó.\n"
+                    + "Si se repite, avisá al responsable del sistema.\n\nDetalle: " + e);
         }
         return false;
     }

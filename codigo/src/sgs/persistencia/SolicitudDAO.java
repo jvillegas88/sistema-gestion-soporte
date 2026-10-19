@@ -13,6 +13,7 @@ import sgs.modelo.Integrante;
 import sgs.modelo.Modulo;
 import sgs.modelo.Producto;
 import sgs.modelo.RegistroSolicitud;
+import sgs.modelo.Solicitante;
 import sgs.modelo.Solicitud;
 import sgs.modelo.catalogo.Canal;
 import sgs.modelo.catalogo.Catalogo;
@@ -131,7 +132,7 @@ public class SolicitudDAO implements DAO<Solicitud> {
                 if (!rs.next()) {
                     return null;
                 }
-                solicitud = armar(rs);
+                solicitud = armar(con, rs);
             }
         }
         for (RegistroDAO<?> dao : daosRegistros) {
@@ -160,7 +161,7 @@ public class SolicitudDAO implements DAO<Solicitud> {
         return buscarPorId(con, id);
     }
 
-    private Solicitud armar(ResultSet rs) throws SQLException {
+    private Solicitud armar(Connection con, ResultSet rs) throws SQLException {
         Producto producto = maestros.producto(rs.getInt("producto_id"));
         Integer moduloNro = RegistroDAO.enteroONulo(rs, "modulo_nro");
         Modulo modulo = moduloNro == null ? null : producto.buscarModulo(moduloNro);
@@ -168,7 +169,7 @@ public class SolicitudDAO implements DAO<Solicitud> {
         Integer prioridadId = RegistroDAO.enteroONulo(rs, "prioridad_id");
         String vinculo = rs.getString("tipo_vinculo");
         return new Solicitud(rs.getInt("solicitud_id"), RegistroDAO.enteroONulo(rs, "numero_origen"),
-                maestros.solicitante(rs.getInt("solicitante_id")), producto, modulo,
+                solicitante(con, rs.getInt("solicitante_id")), producto, modulo,
                 Catalogo.porId(Canal.class, rs.getInt("canal_id")),
                 tipoId == null ? null : Catalogo.porId(TipoSolicitud.class, tipoId),
                 prioridadId == null ? null : Catalogo.porId(Prioridad.class, prioridadId),
@@ -176,6 +177,20 @@ public class SolicitudDAO implements DAO<Solicitud> {
                 vinculo == null ? null : TipoVinculo.valueOf(vinculo),
                 rs.getObject("fecha_recepcion", LocalDateTime.class), rs.getString("asunto"),
                 rs.getString("descripcion"), rs.getBigDecimal("tiempo_historico"));
+    }
+
+    /**
+     * El solicitante de la solicitud. Los solicitantes se leen al iniciar la sesión, así que uno
+     * que se dio de alta después en otra estación no está en memoria: se lee de la base y se
+     * agrega a los datos maestros.
+     */
+    private Solicitante solicitante(Connection con, int id) throws SQLException {
+        Solicitante solicitante = maestros.solicitante(id);
+        if (solicitante == null) {
+            solicitante = new SolicitanteDAO(maestros.getMapaClientes()).buscarPorId(con, id);
+            maestros.agregarSolicitante(solicitante);
+        }
+        return solicitante;
     }
 
     /**
