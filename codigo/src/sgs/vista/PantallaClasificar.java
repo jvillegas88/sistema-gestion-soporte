@@ -75,7 +75,7 @@ public final class PantallaClasificar extends Pantalla {
         Estilo.ponerArea(datos, Estilo.conDesplazamiento(txtMotivo), 1, 4, 1, 1);
         txtMotivo.setEnabled(reclasifica);
         Estilo.poner(datos, Estilo.nota(reclasifica
-                ? "La solicitud ya estaba clasificada: la clasificación anterior queda en el historial con este motivo."
+                ? "Ya estaba clasificada: si cambia el tipo o la prioridad, la anterior queda en el historial con este motivo."
                 : "Es la primera clasificación: queda registrada con tu nombre y la fecha."), 1, 5, 1, 1, h);
 
         JPanel cuerpo = cuerpoVertical();
