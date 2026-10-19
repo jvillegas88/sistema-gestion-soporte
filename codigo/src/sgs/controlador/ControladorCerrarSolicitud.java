@@ -12,10 +12,10 @@ import sgs.persistencia.SolicitudDAO;
 
 /**
  * CU09 Cerrar solicitud. Hereda de CU06 porque lo incluye (paso 4): el cierre siempre registra
- * la intervención del agente. El modelo valida la intervención y el cierre juntos antes de
- * guardar, y después se guardan en una sola transacción: si falta información para cerrar, no
- * se guarda nada y se informa qué falta (alternativa 5.A), así el agente lo completa y vuelve
- * a intentar sin cargar dos veces su tiempo.
+ * la intervención del agente. La intervención y el cierre van en una sola transacción, y el
+ * modelo los valida juntos antes de escribir: si falta información para cerrar, no se guarda
+ * nada y se informa qué falta (alternativa 5.A), así el agente lo completa y vuelve a intentar
+ * sin cargar dos veces su tiempo.
  */
 public class ControladorCerrarSolicitud extends ControladorRegistrarIntervencion {
 
