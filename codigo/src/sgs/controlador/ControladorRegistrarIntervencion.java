@@ -69,11 +69,7 @@ public class ControladorRegistrarIntervencion extends ControladorSolicitud {
             intervencion.agregar(c);
         }
         if (!items.isEmpty()) {
-            Estimacion estimacion = new Estimacion();
-            for (ItemEstimacion item : items) {
-                estimacion.agregarItem(item);
-            }
-            intervencion.setEstimacion(estimacion);
+            intervencion.setEstimacion(new Estimacion(items));
         }
         return intervencion;
     }

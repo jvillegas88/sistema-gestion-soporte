@@ -2,6 +2,7 @@ package sgs.prueba;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import sgs.modelo.Cliente;
 import sgs.modelo.Comunicacion;
@@ -110,11 +111,11 @@ public class PruebaValidarCierre {
         if (items != 0) {
             Intervencion estimacion = new Intervencion(idRegistro++, s, quien, FECHA, TipoIntervencion.ESTIMACION,
                     "Estimación del desarrollo", new BigDecimal("2.00"));
-            Estimacion e = new Estimacion();
+            List<ItemEstimacion> lista = new ArrayList<>();
             for (int i = 1; i <= items; i++) {
-                e.agregarItem(new ItemEstimacion(i, "Ítem " + i, new BigDecimal("5.00")));
+                lista.add(new ItemEstimacion(i, "Ítem " + i, new BigDecimal("5.00")));
             }
-            estimacion.setEstimacion(e);
+            estimacion.setEstimacion(new Estimacion(lista));
             s.cargarRegistroGuardado(estimacion);
         }
         return s;

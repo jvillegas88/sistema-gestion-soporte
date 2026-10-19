@@ -126,18 +126,19 @@ public class IntervencionDAO extends RegistroDAO<Intervencion> {
         String sql = "SELECT e.intervencion_id, e.item_nro, e.descripcion, e.horas FROM items_estimacion e "
                 + "JOIN intervenciones i ON i.intervencion_id = e.intervencion_id "
                 + "WHERE i.solicitud_id = ? ORDER BY e.intervencion_id, e.item_nro";
+        Map<Integer, List<ItemEstimacion>> itemsPorIntervencion = new HashMap<>();
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, solicitud.getId());
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Intervencion intervencion = porId.get(rs.getInt("intervencion_id"));
-                    if (intervencion.getEstimacion() == null) {
-                        intervencion.setEstimacion(new Estimacion());
-                    }
-                    intervencion.getEstimacion().agregarItem(new ItemEstimacion(rs.getInt("item_nro"),
-                            rs.getString("descripcion"), rs.getBigDecimal("horas")));
+                    itemsPorIntervencion.computeIfAbsent(rs.getInt("intervencion_id"), id -> new ArrayList<>())
+                            .add(new ItemEstimacion(rs.getInt("item_nro"), rs.getString("descripcion"),
+                                    rs.getBigDecimal("horas")));
                 }
             }
+        }
+        for (Map.Entry<Integer, List<ItemEstimacion>> e : itemsPorIntervencion.entrySet()) {
+            porId.get(e.getKey()).setEstimacion(new Estimacion(e.getValue()));
         }
     }
 }

@@ -25,6 +25,10 @@ public class DatosMaestros {
     private final Map<Integer, Integrante> integrantes = new LinkedHashMap<>();
     private final Map<Integer, Solicitante> solicitantes = new LinkedHashMap<>();
 
+    private DatosMaestros() {
+        // Se crea solo con cargar(), que lo completa con lo que hay en la base
+    }
+
     /** Lee todos los datos maestros con una conexión abierta. */
     public static DatosMaestros cargar(Connection con) throws SQLException {
         DatosMaestros datos = new DatosMaestros();

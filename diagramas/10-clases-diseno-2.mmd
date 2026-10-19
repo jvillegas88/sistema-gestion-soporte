@@ -94,7 +94,7 @@ classDiagram
     }
     class Estimacion {
         -items: List~ItemEstimacion~
-        +agregarItem(item: ItemEstimacion) void
+        +getItems() List~ItemEstimacion~
         +calcularHorasTotales() BigDecimal
         +tieneItems() boolean
     }
