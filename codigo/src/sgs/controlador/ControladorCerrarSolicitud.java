@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 import sgs.modelo.Integrante;
-import sgs.modelo.Intervencion;
 import sgs.modelo.catalogo.Estado;
 import sgs.modelo.catalogo.TipoIntervencion;
 import sgs.modelo.excepcion.ReglaNegocioException;
@@ -40,10 +39,10 @@ public class ControladorCerrarSolicitud extends ControladorRegistrarIntervencion
     /** Registra la intervención y cierra la solicitud con el tipo de cierre elegido. */
     public void cerrar(Estado cierre, String motivo, TipoIntervencion tipo, String descripcion, BigDecimal tiempoHoras)
             throws SQLException, ReglaNegocioException {
-        Intervencion intervencion = armarIntervencion(tipo, descripcion, tiempoHoras);
+        exigirPermiso(usuario.getRol().esAgente(), "registrar intervenciones");
         String motivoLimpio = motivo == null || motivo.isBlank() ? null : motivo.trim();
         modificarYGuardar(s -> {
-            s.registrarIntervencion(intervencion);
+            s.registrarIntervencion(armarIntervencion(s, tipo, descripcion, tiempoHoras));
             s.cerrar(cierre, usuario, motivoLimpio);
         });
         descartarBorrador();

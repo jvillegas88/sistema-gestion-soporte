@@ -10,7 +10,7 @@ import sgs.persistencia.SolicitudDAO;
 /**
  * Base de los controladores de los casos de uso que trabajan sobre una solicitud existente:
  * todos empiezan cuando el actor "abre una solicitud". Guarda la solicitud abierta y aplica
- * los cambios en el modelo antes de guardarlos.
+ * los cambios en el modelo, que verifica las reglas, antes de guardarlos.
  */
 public abstract class ControladorSolicitud extends Controlador {
 
@@ -43,14 +43,24 @@ public abstract class ControladorSolicitud extends Controlador {
     }
 
     /**
-     * Aplica el cambio en el modelo, que verifica las reglas, y guarda la solicitud con sus
-     * registros nuevos en una sola transacción. Si el modelo rechaza el cambio o falla la base,
-     * vuelve a leer la solicitud para descartar lo que había quedado a medias en memoria.
+     * Aplica el cambio y guarda la solicitud con sus registros nuevos, todo en una transacción.
+     * El cambio no se aplica sobre la copia que se leyó al abrir la pantalla, porque otra
+     * estación pudo modificar la solicitud mientras tanto: se vuelve a leer bloqueando su fila,
+     * así las reglas se verifican con lo último que hay en la base y nadie más la modifica hasta
+     * terminar. Si el modelo rechaza el cambio o falla la base, la transacción se deshace y la
+     * solicitud se vuelve a leer, para mostrar lo que quedó guardado.
      */
     protected void modificarYGuardar(CambioModelo cambio) throws SQLException, ReglaNegocioException {
         try {
-            cambio.aplicar(solicitud);
-            enTransaccion(con -> solicitudDAO.guardar(con, solicitud));
+            enTransaccion(con -> {
+                Solicitud actual = solicitudDAO.buscarParaModificar(con, solicitud.getId());
+                if (actual == null) {
+                    throw new ReglaNegocioException("No existe la solicitud " + solicitud.getId());
+                }
+                cambio.aplicar(actual);
+                solicitudDAO.guardar(con, actual);
+                solicitud = actual;
+            });
         } catch (SQLException | ReglaNegocioException | RuntimeException e) {
             recargar(e);
             throw e;
@@ -59,9 +69,7 @@ public abstract class ControladorSolicitud extends Controlador {
 
     private void recargar(Exception causa) {
         try {
-            if (solicitud.getId() != 0) {
-                solicitud = consultar(con -> solicitudDAO.buscarPorId(con, solicitud.getId()));
-            }
+            solicitud = consultar(con -> solicitudDAO.buscarPorId(con, solicitud.getId()));
         } catch (SQLException e) {
             // Si tampoco se puede leer, se informa el problema original con este como agregado
             causa.addSuppressed(e);

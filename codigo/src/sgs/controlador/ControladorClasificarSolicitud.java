@@ -29,12 +29,12 @@ public class ControladorClasificarSolicitud extends ControladorSolicitud {
     public void clasificar(TipoSolicitud tipo, Prioridad prioridad, Modulo modulo, String motivo)
             throws SQLException, ReglaNegocioException {
         exigirPermiso(usuario.getRol().puedeClasificar(), "clasificar solicitudes");
-        boolean cambiaClasificacion = tipo != solicitud.getTipo() || prioridad != solicitud.getPrioridad();
-        boolean cambiaModulo = !Objects.equals(modulo, solicitud.getModulo());
-        if (!cambiaClasificacion && !cambiaModulo) {
-            throw new ReglaNegocioException("No hay cambios para guardar");
-        }
         modificarYGuardar(s -> {
+            boolean cambiaClasificacion = tipo != s.getTipo() || prioridad != s.getPrioridad();
+            boolean cambiaModulo = !Objects.equals(modulo, s.getModulo());
+            if (!cambiaClasificacion && !cambiaModulo) {
+                throw new ReglaNegocioException("No hay cambios para guardar");
+            }
             if (cambiaClasificacion) {
                 s.clasificar(tipo, prioridad, usuario, motivo);
             }

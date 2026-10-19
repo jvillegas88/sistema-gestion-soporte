@@ -44,7 +44,6 @@ public class ControladorRegistrarHito extends ControladorSolicitud {
             throw new ReglaNegocioException("No existe la solicitud " + solicitudDeployId + " del deploy");
         }
         String referenciaLimpia = referencia == null || referencia.isBlank() ? null : referencia.trim();
-        HitoTecnico hito = new HitoTecnico(solicitud, usuario, tipo, referenciaLimpia, solicitudDeployId);
-        modificarYGuardar(s -> s.registrarHito(hito));
+        modificarYGuardar(s -> s.registrarHito(new HitoTecnico(s, usuario, tipo, referenciaLimpia, solicitudDeployId)));
     }
 }

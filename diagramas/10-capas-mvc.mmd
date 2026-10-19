@@ -78,6 +78,7 @@ classDiagram
         }
         class SolicitudDAO {
             -daosRegistros: List~RegistroDAO~
+            +buscarParaModificar(con, id) Solicitud
             +guardar(con, solicitud) void
         }
         class RegistroDAO~T~ {

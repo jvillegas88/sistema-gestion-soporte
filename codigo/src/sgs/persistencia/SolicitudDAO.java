@@ -142,6 +142,24 @@ public class SolicitudDAO implements DAO<Solicitud> {
         return solicitud;
     }
 
+    /**
+     * Lee la solicitud para modificarla, bloqueando su fila hasta el final de la transacción.
+     * Si otra estación está guardando la misma solicitud, espera a que termine y lee lo que
+     * quedó. Tiene que llamarse dentro de una transacción.
+     */
+    public Solicitud buscarParaModificar(Connection con, int id) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement(
+                "SELECT solicitud_id FROM solicitudes WHERE solicitud_id = ? FOR UPDATE")) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+            }
+        }
+        return buscarPorId(con, id);
+    }
+
     private Solicitud armar(ResultSet rs) throws SQLException {
         Producto producto = maestros.producto(rs.getInt("producto_id"));
         Integer moduloNro = RegistroDAO.enteroONulo(rs, "modulo_nro");

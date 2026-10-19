@@ -9,6 +9,7 @@ import sgs.modelo.Estimacion;
 import sgs.modelo.Integrante;
 import sgs.modelo.Intervencion;
 import sgs.modelo.ItemEstimacion;
+import sgs.modelo.Solicitud;
 import sgs.modelo.catalogo.TipoComunicacion;
 import sgs.modelo.catalogo.TipoIntervencion;
 import sgs.modelo.excepcion.ReglaNegocioException;
@@ -50,17 +51,19 @@ public class ControladorRegistrarIntervencion extends ControladorSolicitud {
      */
     public BigDecimal registrar(TipoIntervencion tipo, String descripcion, BigDecimal tiempoHoras)
             throws SQLException, ReglaNegocioException {
-        Intervencion intervencion = armarIntervencion(tipo, descripcion, tiempoHoras);
-        modificarYGuardar(s -> s.registrarIntervencion(intervencion));
+        exigirPermiso(usuario.getRol().esAgente(), "registrar intervenciones");
+        modificarYGuardar(s -> s.registrarIntervencion(armarIntervencion(s, tipo, descripcion, tiempoHoras)));
         descartarBorrador();
         return solicitud.calcularTiempoTotal();
     }
 
-    /** Arma la intervención con el borrador. La usa también el cierre, que incluye este caso de uso. */
-    protected Intervencion armarIntervencion(TipoIntervencion tipo, String descripcion, BigDecimal tiempoHoras)
-            throws ReglaNegocioException {
-        exigirPermiso(usuario.getRol().esAgente(), "registrar intervenciones");
-        Intervencion intervencion = new Intervencion(solicitud, usuario, tipo,
+    /**
+     * Arma la intervención con el borrador, para la solicitud que se va a modificar. La usa
+     * también el cierre, que incluye este caso de uso.
+     */
+    protected Intervencion armarIntervencion(Solicitud s, TipoIntervencion tipo, String descripcion,
+            BigDecimal tiempoHoras) {
+        Intervencion intervencion = new Intervencion(s, usuario, tipo,
                 descripcion == null ? null : descripcion.trim(), tiempoHoras);
         for (Comunicacion c : comunicaciones) {
             intervencion.agregar(c);
