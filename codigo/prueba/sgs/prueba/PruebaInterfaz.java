@@ -26,6 +26,11 @@ import javax.swing.JTextField;
 import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
 import sgs.Aplicacion;
+import sgs.controlador.ControladorReportes;
+import sgs.modelo.Integrante;
+import sgs.modelo.catalogo.Rol;
+import sgs.modelo.excepcion.ReglaNegocioException;
+import sgs.persistencia.DatosMaestros;
 import sgs.modelo.Formatos;
 import sgs.persistencia.ConexionBD;
 
@@ -38,6 +43,8 @@ import sgs.persistencia.ConexionBD;
  * los roles que intervienen en el proceso, hasta cerrarse como Resuelta.</li>
  * <li>PR-I-02, parte del TP3 (caso CP-I-02): el reporte de CU11 se compara con el total
  * calculado a mano sobre los datos de prueba, y el de CU12 con el mismo total.</li>
+ * <li>PR-S-03 (caso CP-S-03): los usuarios sin rol de gestión no pueden abrir los reportes,
+ * ni desde el menú ni pidiéndoselos directamente al controlador.</li>
  * </ul>
  * En el camino guarda las capturas del informe. Parte de los datos de prueba del TP2, así que
  * antes hay que recargar la base. Se ejecuta con probar-interfaz.sh, en una pantalla virtual.
@@ -81,6 +88,7 @@ public final class PruebaInterfaz {
         int numero = prI01();
         prI02();
         clasificarSolicitud12();
+        prS03();
         escribir("");
         escribir("Solicitud creada por PR-I-01: " + numero);
         escribir("Ejecuciones: " + ejecuciones + ". Dieron lo esperado: " + (ejecuciones - fallas.size())
@@ -446,6 +454,66 @@ public final class PruebaInterfaz {
         m.capturar("20-cu12-demoradas.png", cu12);
         m.presionar(cu12, "Cerrar");
         m.esperarCierre(cu12);
+    }
+
+    // ------------------------------------------------------------------
+    // PR-S-03: los reportes, solo para el rol de gestión (RNF05, RNF06)
+    // ------------------------------------------------------------------
+
+    private void prS03() throws SQLException {
+        escribir("");
+        escribir("PR-S-03: usuarios sin rol de gestión intentan abrir los reportes (RNF05, RNF06)");
+        // Primera barrera, el menú: un usuario de cada rol. Solo gestión tiene las opciones habilitadas
+        String[][] usuarios = {
+            {"lgomez", "Soporte funcional"}, {"pmedina", "Soporte técnico"}, {"mrojas", "Infraestructura"},
+            {"vsosa", "Desarrollo"}, {"scastro", "Responsable de gestión"},
+        };
+        String negado = "deshabilitada (Solo el rol de gestión)";
+        for (String[] u : usuarios) {
+            iniciarSesion(u[0]);
+            if (u[0].equals("pmedina")) {
+                abrirMenuParaCaptura("Reportes", "12-cp-s-03-menu.png", true);
+            }
+            String esperado = u[1].equals("Responsable de gestión") ? "habilitada" : negado;
+            verificar(String.format("Menú, %s (%s)", u[0], u[1]),
+                    estadoOpcion("Reportes", "Esfuerzo por cliente...") + " / " + estadoOpcion("Reportes", "Carga por integrante..."),
+                    esperado + " / " + esperado);
+        }
+        // Segunda barrera, el controlador: rechaza el pedido aunque no llegue desde el menú
+        try (Connection con = ConexionBD.obtenerConexion()) {
+            DatosMaestros maestros = DatosMaestros.cargar(con);
+            for (Integrante integrante : maestros.getIntegrantes()) {
+                String obtenido;
+                try {
+                    new ControladorReportes(integrante, maestros).cargaPorIntegrante(
+                            LocalDate.of(2026, 7, 1), LocalDate.of(2026, 9, 30));
+                    obtenido = "Accede";
+                } catch (ReglaNegocioException e) {
+                    obtenido = "Rechaza: " + e.getMessage();
+                }
+                String esperado = integrante.getRol() == Rol.RESPONSABLE_GESTION ? "Accede"
+                        : "Rechaza: Los reportes están restringidos al rol de gestión";
+                verificar(String.format("Controlador, %s (%s)", integrante.getUsuario(), integrante.getRol()),
+                        obtenido, esperado);
+            }
+        }
+    }
+
+    /** "habilitada", o "deshabilitada" con la explicación que muestra la opción. */
+    private String estadoOpcion(String menu, String opcion) {
+        return Manejador.enEDT(() -> {
+            for (int i = 0; i < principal.getJMenuBar().getMenuCount(); i++) {
+                JMenu j = principal.getJMenuBar().getMenu(i);
+                if (j.getText().equals(menu)) {
+                    for (java.awt.Component c : j.getMenuComponents()) {
+                        if (c instanceof JMenuItem mi && mi.getText().equals(opcion)) {
+                            return mi.isEnabled() ? "habilitada" : "deshabilitada (" + mi.getToolTipText() + ")";
+                        }
+                    }
+                }
+            }
+            throw new IllegalStateException("No está la opción " + menu + " > " + opcion);
+        });
     }
 
     // ------------------------------------------------------------------

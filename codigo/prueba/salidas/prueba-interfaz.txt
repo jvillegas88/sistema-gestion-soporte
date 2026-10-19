@@ -1,4 +1,4 @@
-Pruebas desde la interfaz - 19/10/2026 15:52
+Pruebas desde la interfaz - 19/10/2026 16:17
 
 Inicio de sesión (RNF06)
   PASÓ   Contraseña incorrecta: El usuario o la contraseña no son correctos
@@ -57,5 +57,19 @@ PR-I-02 (parte del TP3): reportes del 01/07/2026 al 30/09/2026 contra el cálcul
 CU03 sobre la solicitud 12 (captura)
   PASÓ   CU03 clasifica: Pedido de infraestructura
 
+PR-S-03: usuarios sin rol de gestión intentan abrir los reportes (RNF05, RNF06)
+  PASÓ   Menú, lgomez (Soporte funcional): deshabilitada (Solo el rol de gestión) / deshabilitada (Solo el rol de gestión)
+  PASÓ   Menú, pmedina (Soporte técnico): deshabilitada (Solo el rol de gestión) / deshabilitada (Solo el rol de gestión)
+  PASÓ   Menú, mrojas (Infraestructura): deshabilitada (Solo el rol de gestión) / deshabilitada (Solo el rol de gestión)
+  PASÓ   Menú, vsosa (Desarrollo): deshabilitada (Solo el rol de gestión) / deshabilitada (Solo el rol de gestión)
+  PASÓ   Menú, scastro (Responsable de gestión): habilitada / habilitada
+  PASÓ   Controlador, dferreyra (Soporte técnico): Rechaza: Los reportes están restringidos al rol de gestión
+  PASÓ   Controlador, lgomez (Soporte funcional): Rechaza: Los reportes están restringidos al rol de gestión
+  PASÓ   Controlador, mrojas (Infraestructura): Rechaza: Los reportes están restringidos al rol de gestión
+  PASÓ   Controlador, pmedina (Soporte técnico): Rechaza: Los reportes están restringidos al rol de gestión
+  PASÓ   Controlador, scastro (Responsable de gestión): Accede
+  PASÓ   Controlador, therrera (Desarrollo): Rechaza: Los reportes están restringidos al rol de gestión
+  PASÓ   Controlador, vsosa (Desarrollo): Rechaza: Los reportes están restringidos al rol de gestión
+
 Solicitud creada por PR-I-01: 13
-Ejecuciones: 47. Dieron lo esperado: 47. No dieron lo esperado: 0
+Ejecuciones: 59. Dieron lo esperado: 59. No dieron lo esperado: 0
