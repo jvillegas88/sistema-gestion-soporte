@@ -255,11 +255,12 @@ public class Solicitud {
     /**
      * Todos los registros de la solicitud en una sola lista ordenada por fecha.
      * <p>
-     * Se juntan las seis listas y se ordenan por inserción directa. Cada lista ya viene
-     * ordenada desde la base, así que la lista combinada está casi ordenada, que es el caso
-     * en que la inserción tiene su mejor rendimiento, cercano a O(n). Además es un método
-     * estable: dos registros que el criterio considera iguales conservan el orden en que se
-     * juntaron.
+     * Se juntan las seis listas y se ordenan por inserción directa. Cada lista viene ordenada
+     * desde la base, pero juntas no forman una lista casi ordenada, porque los registros de
+     * cada tipo se reparten a lo largo de toda la vida de la solicitud. Un historial tiene
+     * decenas de registros, y para ese tamaño la inserción alcanza. Como es estable, dos
+     * registros que el criterio considera iguales, por ejemplo dos intervenciones guardadas en
+     * el mismo segundo, quedan en el orden en que vinieron de la base.
      * Los registros que todavía no se guardaron no tienen fecha y quedan al final.
      */
     public List<RegistroSolicitud> getHistorial() {
