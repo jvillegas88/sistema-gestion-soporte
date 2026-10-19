@@ -41,7 +41,7 @@ Después se crean la base, el usuario de la aplicación y los datos de prueba, q
 sql/recargar-base.sh
 ```
 
-El script ejecuta `01_creacion.sql` y `02_datos.sql` dentro del contenedor `sgs-mysql`. Con otro servidor, se ejecutan esos dos scripts con un usuario administrador. La aplicación se conecta con el usuario `app_soporte` que crea `01_creacion.sql`, que exige conexión cifrada y no puede borrar registros.
+El script espera a que MySQL termine de arrancar, que recién después del `docker run` puede tardar unos segundos, ejecuta `01_creacion.sql` y `02_datos.sql` dentro del contenedor `sgs-mysql` y al final comprueba que los datos quedaron cargados. Con otro servidor, se ejecutan esos dos scripts con un usuario administrador. La aplicación se conecta con el usuario `app_soporte` que crea `01_creacion.sql`, que exige conexión cifrada y no puede borrar registros.
 
 ### 2. Compilar y ejecutar
 
@@ -51,6 +51,8 @@ Desde la carpeta `codigo/`, con Java 21:
 ./compilar.sh
 ./ejecutar.sh
 ```
+
+`compilar.sh` deja el driver de MySQL en `codigo/lib/`. Para abrir el proyecto en un IDE, las fuentes están en `codigo/src` y `codigo/prueba`, y ese `.jar` se agrega como biblioteca.
 
 Si la base no está en `127.0.0.1:3306`, la dirección se indica al ejecutar:
 
