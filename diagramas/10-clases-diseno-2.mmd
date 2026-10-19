@@ -18,7 +18,14 @@ classDiagram
         +getSolicitud() Solicitud
         +getAutor() Integrante
         +getFecha() LocalDateTime
+        +estaGuardado() boolean
+        +asignarIdentidad(id: int, fecha: LocalDateTime) void
         +validar() void*
+        +getTipoRegistro() String*
+        +getDetalle() String*
+    }
+    class ReglaNegocioException {
+        <<exception>>
     }
     class Intervencion {
         -tipo: TipoIntervencion
@@ -31,17 +38,23 @@ classDiagram
         +tieneRespuestaAlCliente() boolean
         +getTiempoHoras() BigDecimal
         +validar() void
+        +getTipoRegistro() String
+        +getDetalle() String
     }
     class Asignacion {
         -asignado: Integrante
         +getAsignado() Integrante
         +validar() void
+        +getTipoRegistro() String
+        +getDetalle() String
     }
     class CambioEstado {
         -estado: Estado
         -motivo: String
         +getEstado() Estado
         +validar() void
+        +getTipoRegistro() String
+        +getDetalle() String
     }
     class Espera {
         -motivo: MotivoEspera
@@ -50,19 +63,26 @@ classDiagram
         +cerrar(hasta: LocalDateTime) void
         +calcularDuracion() Duration
         +validar() void
+        +getTipoRegistro() String
+        +getDetalle() String
     }
     class HitoTecnico {
         -tipo: TipoHito
         -referencia: String
-        -solicitudDeploy: Solicitud
+        -solicitudDeployId: Integer
         +getTipo() TipoHito
         +validar() void
+        +getTipoRegistro() String
+        +getDetalle() String
     }
     class Reclasificacion {
         -motivo: String
         -tipoAnterior: TipoSolicitud
         -prioridadAnterior: Prioridad
+        +esInicial() boolean
         +validar() void
+        +getTipoRegistro() String
+        +getDetalle() String
     }
     class Comunicacion {
         -id: int
@@ -70,6 +90,7 @@ classDiagram
         -texto: String
         +getTipo() TipoComunicacion
         +getTexto() String
+        +esRespuestaAlCliente() boolean
     }
     class Estimacion {
         -items: List~ItemEstimacion~
@@ -91,6 +112,7 @@ classDiagram
     RegistroSolicitud <|-- Espera
     RegistroSolicitud <|-- HitoTecnico
     RegistroSolicitud <|-- Reclasificacion
+    RegistroSolicitud ..> ReglaNegocioException : validar() la lanza
     Comunicacion "0..*" --* "1" Intervencion
     Estimacion "0..1" --* "1" Intervencion
     ItemEstimacion "1..*" --* "1" Estimacion

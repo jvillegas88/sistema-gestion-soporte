@@ -5,7 +5,13 @@ config:
   themeCSS: ".nodeLabel, .nodeLabel p, .label foreignObject div { line-height: 1.15 !important; } .cluster rect { fill: none !important; stroke: none !important; } .cluster-label { display: none !important; }"
 ---
 classDiagram
-    direction LR
+    direction TB
+    class Catalogo {
+        <<interface>>
+        +getId() int
+        +getNombre() String
+        +porId(tipo: Class~E~, id: int)$ E
+    }
     namespace fila1 {
         class Canal {
             <<enumeration>>
@@ -44,6 +50,11 @@ classDiagram
             RESPONSABLE_GESTION
             +getId() int
             +getNombre() String
+            +esAgente() boolean
+            +puedeRegistrarSolicitudes() boolean
+            +puedeClasificar() boolean
+            +puedeRegistrarHitos() boolean
+            +puedeVerReportes() boolean
         }
     }
     namespace fila2 {
@@ -105,3 +116,11 @@ classDiagram
             RESPUESTA_CLIENTE
         }
     }
+    Canal ..|> Catalogo
+    TipoSolicitud ..|> Catalogo
+    Prioridad ..|> Catalogo
+    Rol ..|> Catalogo
+    Catalogo <|.. Estado
+    Catalogo <|.. TipoIntervencion
+    Catalogo <|.. MotivoEspera
+    Catalogo <|.. TipoHito

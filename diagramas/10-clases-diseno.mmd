@@ -1,6 +1,8 @@
 ---
 config:
   layout: elk
+  elk:
+    nodePlacementAlignment: LEFTUP
   class:
     padding: 7
   themeCSS: ".nodeLabel, .nodeLabel p, .label foreignObject div { line-height: 1.15 !important; }"
@@ -25,6 +27,8 @@ classDiagram
         -nombre: String
         -correoSoporte: String
         -modulos: List~Modulo~
+        +agregarModulo(numero: int, nombre: String) Modulo
+        +buscarModulo(numero: int) Modulo
         +tieneModulo(modulo: Modulo) boolean
     }
     class Modulo {
@@ -53,7 +57,7 @@ classDiagram
         -canal: Canal
         -tipo: TipoSolicitud
         -prioridad: Prioridad
-        -solicitudOrigen: Solicitud
+        -solicitudOrigenId: Integer
         -tipoVinculo: TipoVinculo
         -fechaRecepcion: LocalDateTime
         -asunto: String
@@ -65,8 +69,11 @@ classDiagram
         -esperas: List~Espera~
         -hitos: List~HitoTecnico~
         -reclasificaciones: List~Reclasificacion~
+        -pendientes: Queue~RegistroSolicitud~
+        -faltantesCierre: List~String~
         +getCliente() Cliente
         +getEstadoActual() Estado
+        +estaAbierta() boolean
         +getResponsable() Integrante
         +getFechaCierre() LocalDateTime
         +calcularTiempoTotal() BigDecimal
@@ -88,7 +95,11 @@ classDiagram
         +descartar(autor: Integrante, motivo: String) void
         +marcarDuplicada(original: Solicitud, autor: Integrante) void
         +vincular(origen: Solicitud, vinculo: TipoVinculo) void
+        +tienePendientes() boolean
+        +tomarPendiente() RegistroSolicitud
+        +cargarRegistroGuardado(registro: RegistroSolicitud) void
         -cambiarEstado(nuevo: Estado, autor: Integrante, motivo: String) void
+        -terminarEsperaAbierta() void
     }
     Cliente "1" <-- "0..*" Solicitante
     Producto "1" *-- "0..*" Modulo
@@ -96,4 +107,3 @@ classDiagram
     Producto "1" <-- "0..*" Solicitud
     Modulo "0..1" <-- "0..*" Solicitud
     Integrante "0..1" <-- "0..*" Solicitud : /responsable
-    Solicitud "0..1" <-- "0..*" Solicitud : solicitudOrigen

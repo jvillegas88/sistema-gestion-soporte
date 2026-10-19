@@ -8,61 +8,105 @@ config:
 classDiagram
     direction TB
     namespace vista {
+        class Pantalla {
+            <<abstract JDialog>>
+            #sesion: Sesion
+            #ejecutar(accion) boolean
+            +mostrar() boolean
+        }
         class PantallaRegistrarIntervencion {
-            <<JDialog>>
             -controlador: ControladorRegistrarIntervencion
-            -cmbTipo: JComboBox~TipoIntervencion~
-            -txtDescripcion: JTextArea
-            -txtTiempo: JTextField
-            -confirmar() void
-            +mostrarTiempoTotal(total: BigDecimal) void
-            +mostrarError(mensaje: String) void
+            -panel: PanelIntervencion
+            +crear(duenio, sesion, solicitudId)$ PantallaRegistrarIntervencion
+            -registrar() void
+        }
+        class PanelIntervencion {
+            +getTipo() TipoIntervencion
+            +getTiempo() BigDecimal
+            +cargarBorrador(controlador) void
+        }
+        class Dialogos {
+            +ejecutar(padre, accion)$ boolean
         }
     }
     namespace controlador {
-        class ControladorRegistrarIntervencion {
+        class Sesion {
             -usuario: Integrante
-            -solicitud: Solicitud
-            -solicitudDAO: DAO~Solicitud~
-            -intervencionDAO: DAO~Intervencion~
-            -cambioEstadoDAO: DAO~CambioEstado~
-            +abrirSolicitud(solicitudId: int) Solicitud
-            +agregarComunicacion(tipo: TipoComunicacion, texto: String) void
-            +registrar(tipo: TipoIntervencion, descripcion: String, tiempoHoras: BigDecimal) BigDecimal
+            +registrarIntervencion() ControladorRegistrarIntervencion
+        }
+        class Controlador {
+            <<abstract>>
+            #usuario: Integrante
+            #enTransaccion(accion) void
+            #consultar(consulta) T
+        }
+        class ControladorSolicitud {
+            <<abstract>>
+            #solicitudDAO: SolicitudDAO
+            #solicitud: Solicitud
+            +abrirSolicitud(solicitudId) Solicitud
+            #modificarYGuardar(cambio) void
+        }
+        class ControladorRegistrarIntervencion {
+            +agregarComunicacion(tipo, texto) void
+            +registrar(tipo, descripcion, tiempoHoras) BigDecimal
         }
     }
     namespace modelo {
         class Solicitud {
-            +registrarIntervencion(intervencion: Intervencion) void
+            +registrarIntervencion(intervencion) void
             +calcularTiempoTotal() BigDecimal
+            +tienePendientes() boolean
+            +tomarPendiente() RegistroSolicitud
         }
         class Intervencion {
             +validar() void
         }
         class CambioEstado
+        class ReglaNegocioException {
+            <<exception>>
+        }
     }
     namespace persistencia {
         class ConexionBD {
             +obtenerConexion()$ Connection
         }
-        class SolicitudDAO
-        class IntervencionDAO
-        class CambioEstadoDAO
         class DAO~T~ {
             <<interface>>
-            +insertar(con: Connection, entidad: T) int
-            +buscarPorId(con: Connection, id: int) T
+            +insertar(con, entidad) int
+            +buscarPorId(con, id) T
         }
+        class SolicitudDAO {
+            -daosRegistros: List~RegistroDAO~
+            +guardar(con, solicitud) void
+        }
+        class RegistroDAO~T~ {
+            <<abstract>>
+            +acepta(registro) boolean
+            +guardar(con, registro) void
+            +insertar(con, registro)* int
+            +listarPorSolicitud(con, solicitud)* List~T~
+        }
+        class IntervencionDAO
+        class CambioEstadoDAO
     }
-    PantallaRegistrarIntervencion ..> ControladorRegistrarIntervencion : usa
-    ControladorRegistrarIntervencion ..> ConexionBD : usa
-    ControladorRegistrarIntervencion ..> Solicitud : usa
-    ControladorRegistrarIntervencion ..> Intervencion : crea
-    ControladorRegistrarIntervencion ..> CambioEstado : usa
-    Solicitud <.. SolicitudDAO
-    Intervencion <.. IntervencionDAO
-    CambioEstado <.. CambioEstadoDAO
+    Pantalla <|-- PantallaRegistrarIntervencion
+    PantallaRegistrarIntervencion *-- PanelIntervencion
+    PantallaRegistrarIntervencion ..> Dialogos
+    PantallaRegistrarIntervencion ..> ControladorRegistrarIntervencion
+    Sesion ..> ControladorRegistrarIntervencion
+    ControladorSolicitud --|> Controlador
+    ControladorRegistrarIntervencion --|> ControladorSolicitud
+    Controlador ..> ConexionBD
+    ControladorSolicitud ..> SolicitudDAO
+    ControladorSolicitud ..> Solicitud
+    ControladorRegistrarIntervencion ..> Intervencion
+    Solicitud ..> CambioEstado
+    Intervencion ..> ReglaNegocioException
     SolicitudDAO ..|> DAO
-    IntervencionDAO ..|> DAO
-    CambioEstadoDAO ..|> DAO
-    ControladorRegistrarIntervencion ..> DAO : usa
+    SolicitudDAO o-- RegistroDAO
+    RegistroDAO <|-- IntervencionDAO
+    RegistroDAO <|-- CambioEstadoDAO
+    SolicitudDAO ..> Solicitud
+    IntervencionDAO ..> Intervencion
+    CambioEstadoDAO ..> CambioEstado
