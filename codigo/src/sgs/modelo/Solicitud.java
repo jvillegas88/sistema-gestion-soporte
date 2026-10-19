@@ -576,7 +576,11 @@ public class Solicitud {
         return pendientes.poll();
     }
 
-    /** Agrega un registro que ya estaba guardado en la base. Lo usa el DAO al leer la solicitud. */
+    /**
+     * Agrega un registro que ya estaba guardado en la base. Lo usa el DAO al leer la solicitud,
+     * y es público porque el DAO está en otro paquete. No valida ni pasa por la cola de
+     * pendientes, así que lo que agrega no se vuelve a guardar.
+     */
     public void cargarRegistroGuardado(RegistroSolicitud registro) {
         if (registro instanceof Intervencion i) {
             intervenciones.add(i);
