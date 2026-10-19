@@ -12,3 +12,9 @@ out/
 # Datos de la organización: nunca se versionan
 *.csv
 datos-crudos/
+
+# Generados por los scripts del código: los compilados, el driver JDBC que baja
+# compilar.sh y las capturas que saca probar-interfaz.sh
+codigo/clases/
+codigo/lib/
+capturas/

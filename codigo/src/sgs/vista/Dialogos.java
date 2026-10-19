@@ -1,0 +1,77 @@
+package sgs.vista;
+
+import java.awt.Component;
+import java.sql.SQLException;
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+import sgs.modelo.excepcion.ReglaNegocioException;
+
+/**
+ * Mensajes al usuario y ejecución de las acciones de las pantallas. Cada acción se ejecuta
+ * dentro de un try-catch que separa los dos tipos de problema: una regla del negocio que no se
+ * cumple, que el usuario puede corregir, y un problema con la base de datos.
+ */
+public final class Dialogos {
+
+    /** Una acción de una pantalla, que puede chocar con una regla o con la base. */
+    @FunctionalInterface
+    public interface Accion {
+        void ejecutar() throws SQLException, ReglaNegocioException;
+    }
+
+    private Dialogos() {
+        // Solo métodos de clase
+    }
+
+    /**
+     * Ejecuta la acción y, si falla, muestra el mensaje que corresponde.
+     *
+     * @return true si la acción terminó bien
+     */
+    public static boolean ejecutar(Component padre, Accion accion) {
+        try {
+            accion.ejecutar();
+            return true;
+        } catch (ReglaNegocioException e) {
+            aviso(padre, e.getMessage());
+        } catch (SQLException e) {
+            error(padre, "No se pudo completar la operación por un problema con la base de datos.\n"
+                    + "Verificá la conexión e intentá de nuevo.\n\nDetalle: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public static void aviso(Component padre, String mensaje) {
+        JOptionPane.showMessageDialog(padre, mensaje, Estilo.SISTEMA, JOptionPane.WARNING_MESSAGE);
+    }
+
+    public static void error(Component padre, String mensaje) {
+        JOptionPane.showMessageDialog(padre, mensaje, Estilo.SISTEMA, JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static void informacion(Component padre, String mensaje) {
+        JOptionPane.showMessageDialog(padre, mensaje, Estilo.SISTEMA, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /** Pide confirmación con Sí y No. Devuelve true si el usuario confirma. */
+    public static boolean confirmar(Component padre, String pregunta) {
+        Object[] opciones = {"Sí", "No"};
+        int respuesta = JOptionPane.showOptionDialog(padre, pregunta, Estilo.SISTEMA, JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[0]);
+        return respuesta == 0;
+    }
+
+    /**
+     * Pide un texto de varias líneas, por ejemplo un motivo.
+     *
+     * @return el texto ingresado, o null si el usuario canceló
+     */
+    public static String pedirTexto(Component padre, String pregunta) {
+        JTextArea area = Estilo.areaDeTexto(3);
+        Object[] contenido = {pregunta, Estilo.conDesplazamiento(area)};
+        Object[] opciones = {"Aceptar", "Cancelar"};
+        int respuesta = JOptionPane.showOptionDialog(padre, contenido, Estilo.SISTEMA, JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[0]);
+        return respuesta == 0 ? area.getText() : null;
+    }
+}

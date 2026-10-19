@@ -1,0 +1,16 @@
+CP-B-01 Prueba de caja blanca de Solicitud.validarCierre()
+
+Dato 1: Error de desarrollo, con respuesta, intervención y hito
+   esperado true [] | obtenido true [] | PASÓ
+Dato 2: Error de infraestructura, sin respuesta, sin intervención del responsable, sin hito
+   esperado false [respuesta al cliente, intervención del responsable, hito de publicación en producción] | obtenido false [respuesta al cliente, intervención del responsable, hito de publicación en producción] | PASÓ
+Dato 3: Pedido de presupuesto con estimación de dos ítems
+   esperado true [] | obtenido true [] | PASÓ
+Dato 4: Pedido de presupuesto con estimación sin ítems
+   esperado false [estimación con al menos un ítem] | obtenido false [estimación con al menos un ítem] | PASÓ
+Dato 5: Consulta funcional con respuesta e intervención
+   esperado true [] | obtenido true [] | PASÓ
+Dato 6: Sin tipo, con respuesta e intervención (D0, agregada en el TP3)
+   esperado false [tipo de solicitud] | obtenido false [tipo de solicitud] | PASÓ
+
+Resultado: 6 de 6 datos dieron lo esperado

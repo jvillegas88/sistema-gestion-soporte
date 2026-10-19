@@ -1,0 +1,61 @@
+Pruebas desde la interfaz - 19/10/2026 15:52
+
+Inicio de sesión (RNF06)
+  PASÓ   Contraseña incorrecta: El usuario o la contraseña no son correctos
+  PASÓ   Contraseña correcta: Ingresó
+
+PR-N-01 desde la pantalla de CU06, solicitud 12 del Cliente A, usuario pmedina (soporte técnico)
+  PASÓ   -1      CEI1       : No registra. La intervención tiene que tener un tiempo mayor que cero
+  PASÓ   -0,01   CEI1       : No registra. La intervención tiene que tener un tiempo mayor que cero
+  PASÓ   0       CEI1       : No registra. La intervención tiene que tener un tiempo mayor que cero
+  PASÓ   0,01    CEV1       : Registra. Intervención registrada. Tiempo total de la solicitud: 0,01 h
+  PASÓ   1,5     CEV1       : Registra. Intervención registrada. Tiempo total de la solicitud: 1,51 h
+  PASÓ   23,99   CEV1       : Registra. Intervención registrada. Tiempo total de la solicitud: 25,5 h
+  PASÓ   24      CEV1       : Registra. Intervención registrada. Tiempo total de la solicitud: 49,5 h
+  PASÓ   24,01   CEI2       : No registra. El tiempo no puede superar las 24 horas. Si el trabajo siguió otro día, registrá otra intervención
+  PASÓ   30      CEI2       : No registra. El tiempo no puede superar las 24 horas. Si el trabajo siguió otro día, registrá otra intervención
+  PASÓ   2,125   CEI3       : No registra. El tiempo admite hasta dos decimales
+  PASÓ   24,004  CEI2 y CEI3: No registra. El tiempo no puede superar las 24 horas. Si el trabajo siguió otro día, registrá otra intervención
+  PASÓ   CU08 producción sin testing (6.A): La solicitud no tiene registrada la publicación en testing. ¿Registrar igual la publicación en producción? / No registra
+  PASÓ   Valores guardados en la base: 0.01 1.50 23.99 24.00
+  PASÓ   Tiempo total de la solicitud 12: 49,5 h
+
+PR-I-01: una solicitud nueva hasta el cierre como Resuelta (CU01, CU06, CU08, CU07 y CU09)
+  PASÓ   Fecha inexistente (31/09): La fecha de recepción tiene que ser una fecha válida con el formato dd/mm/aaaa hh:mm
+  PASÓ   CU01 registra la solicitud: Registrada en estado Nueva
+  PASÓ   Estado al registrar: Nueva
+  PASÓ   CU06 Análisis 0,5 h: Registrada
+  PASÓ   Estado después de la primera intervención: En curso
+  PASÓ   CU06 Corrección 2,5 h: Registrada
+  PASÓ   CU08 Corrección: Registrado
+  PASÓ   CU08 Publicación en testing: Registrado
+  PASÓ   CU06 Respuesta al cliente 0,25 h: Registrada
+  PASÓ   CU07 abre la espera: En espera
+  PASÓ   CU07 termina la espera: En curso
+  PASÓ   CU09 sin hito de producción: Hoy le falta: hito de publicación en producción. / Para cerrar la solicitud falta: hito de publicación en producción
+  PASÓ   CU08 Publicación en producción: Registrado
+  PASÓ   CU09 cierra la solicitud: Solicitud cerrada como Resuelta.
+  PASÓ   Estado final: Resuelta
+  PASÓ   Tiempo total: 3,5 h
+  PASÓ   Base: cambios de estado: Nueva > En curso > En espera > En curso > Resuelta
+  PASÓ   Base: intervenciones y horas: 4 por 3.50
+  PASÓ   Base: respuestas al cliente: 2
+  PASÓ   Base: hitos: Corrección, Publicación en testing, Publicación en producción
+  PASÓ   Base: esperas cerradas: 1 cerrada
+  PASÓ   Base: clasificación inicial: Clasificación inicial
+
+PR-I-02 (parte del TP3): reportes del 01/07/2026 al 30/09/2026 contra el cálculo a mano
+  PASÓ   CU11 Cliente A: 4 | 11,25 | 2,72
+  PASÓ   CU11 Cliente B: 3 | 8 | 10,54
+  PASÓ   CU11 Cliente C: 3 | 9,25 | 15,29
+  PASÓ   CU11 Cliente no identificado: 0 | 0 | 3,5
+  PASÓ   CU11 Total: 10 | 28,5 | 28,55 | 3,5 | +714,3 %
+  PASÓ   CU11 distribución por tipo, total: 3 | 2 | 1 | 1 | 2 | 1
+  PASÓ   CU12 Total: 28,5 | 29
+  PASÓ   CU12 primera fila (orden por nombre): Diego Ferreyra
+
+CU03 sobre la solicitud 12 (captura)
+  PASÓ   CU03 clasifica: Pedido de infraestructura
+
+Solicitud creada por PR-I-01: 13
+Ejecuciones: 47. Dieron lo esperado: 47. No dieron lo esperado: 0
