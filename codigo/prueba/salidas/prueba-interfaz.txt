@@ -1,4 +1,4 @@
-Pruebas desde la interfaz - 19/10/2026 16:17
+Pruebas desde la interfaz - 19/10/2026 17:50
 
 Inicio de sesión (RNF06)
   PASÓ   Contraseña incorrecta: El usuario o la contraseña no son correctos
@@ -16,7 +16,7 @@ PR-N-01 desde la pantalla de CU06, solicitud 12 del Cliente A, usuario pmedina (
   PASÓ   30      CEI2       : No registra. El tiempo no puede superar las 24 horas. Si el trabajo siguió otro día, registrá otra intervención
   PASÓ   2,125   CEI3       : No registra. El tiempo admite hasta dos decimales
   PASÓ   24,004  CEI2 y CEI3: No registra. El tiempo no puede superar las 24 horas. Si el trabajo siguió otro día, registrá otra intervención
-  PASÓ   CU08 producción sin testing (6.A): La solicitud no tiene registrada la publicación en testing. ¿Registrar igual la publicación en producción? / No registra
+  PASÓ   CU08 sin clasificar: deshabilitado (Los hitos técnicos se registran en errores de desarrollo, errores de infraestructura y pedidos de infraestructura)
   PASÓ   Valores guardados en la base: 0.01 1.50 23.99 24.00
   PASÓ   Tiempo total de la solicitud 12: 49,5 h
 
@@ -53,9 +53,11 @@ PR-I-02 (parte del TP3): reportes del 01/07/2026 al 30/09/2026 contra el cálcul
   PASÓ   CU11 distribución por tipo, total: 3 | 2 | 1 | 1 | 2 | 1
   PASÓ   CU12 Total: 28,5 | 29
   PASÓ   CU12 primera fila (orden por nombre): Diego Ferreyra
+  PASÓ   CU12 integrante sin tiempo en el período: 0 | 0
 
-CU03 sobre la solicitud 12 (captura)
+CU03 y CU08 sobre la solicitud 12
   PASÓ   CU03 clasifica: Pedido de infraestructura
+  PASÓ   CU08 producción sin testing (6.A): La solicitud no tiene registrada la publicación en testing. ¿Registrar igual la publicación en producción? / No registra
 
 PR-S-03: usuarios sin rol de gestión intentan abrir los reportes (RNF05, RNF06)
   PASÓ   Menú, lgomez (Soporte funcional): deshabilitada (Solo el rol de gestión) / deshabilitada (Solo el rol de gestión)
@@ -72,4 +74,4 @@ PR-S-03: usuarios sin rol de gestión intentan abrir los reportes (RNF05, RNF06)
   PASÓ   Controlador, vsosa (Desarrollo): Rechaza: Los reportes están restringidos al rol de gestión
 
 Solicitud creada por PR-I-01: 13
-Ejecuciones: 59. Dieron lo esperado: 59. No dieron lo esperado: 0
+Ejecuciones: 61. Dieron lo esperado: 61. No dieron lo esperado: 0
