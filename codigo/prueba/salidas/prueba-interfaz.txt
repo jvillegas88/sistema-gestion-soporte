@@ -1,4 +1,4 @@
-Pruebas desde la interfaz - 19/10/2026 17:50
+Pruebas desde la interfaz - 19/10/2026 19:01
 
 Inicio de sesión (RNF06)
   PASÓ   Contraseña incorrecta: El usuario o la contraseña no son correctos
