@@ -37,7 +37,9 @@ public class Aplicacion {
             DatosMaestros maestros = controlador.cargarDatosMaestros();
             new VentanaPrincipal(new Sesion(usuario, maestros)).setVisible(true);
         } catch (SQLException e) {
-            Dialogos.error(null, "No se pudieron leer los datos iniciales de la base.\n\nDetalle: " + e.getMessage());
+            System.err.println("Error de base de datos: " + e.getMessage());
+            Dialogos.error(null, "No se pudieron leer los datos iniciales de la base.\n"
+                    + "Verificá la conexión e intentá de nuevo.");
             System.exit(1);
         }
     }

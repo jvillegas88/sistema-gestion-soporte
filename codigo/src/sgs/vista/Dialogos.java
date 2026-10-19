@@ -36,8 +36,10 @@ public final class Dialogos {
         } catch (ReglaNegocioException e) {
             aviso(padre, e.getMessage());
         } catch (SQLException e) {
+            // El mensaje del driver queda en la consola: al usuario no le sirve
+            System.err.println("Error de base de datos: " + e.getMessage());
             error(padre, "No se pudo completar la operación por un problema con la base de datos.\n"
-                    + "Verificá la conexión e intentá de nuevo.\n\nDetalle: " + e.getMessage());
+                    + "Verificá la conexión e intentá de nuevo.");
         } catch (RuntimeException e) {
             // El detalle técnico queda solo en la consola, para poder corregirlo. Al usuario no
             // se le muestra la excepción.
