@@ -462,6 +462,7 @@ public final class PruebaInterfaz {
         verificar("CU12 Total", fila(carga, "Total", 2, 3), "28,5 | 29");
         verificar("CU12 primera fila (orden por nombre)", String.valueOf(Manejador.enEDT(() -> carga.getValueAt(0, 0))),
                 "Diego Ferreyra");
+        verificar("CU12 integrante sin tiempo en el período", fila(carga, "Silvia Castro", 2, 3), "0 | 0");
         Manejador.enEDT(() -> {
             Manejador.buscar(cu12, JTabbedPane.class, t -> true).setSelectedIndex(1);
             return null;

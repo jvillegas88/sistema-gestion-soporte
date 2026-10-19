@@ -189,6 +189,8 @@ public class ReporteDAO {
 
     /**
      * Por integrante: horas registradas y cantidad de intervenciones en el período (CU12, paso 5).
+     * Muestra a todo el equipo activo, también a quien no registró tiempo, como la consulta de la
+     * sección 17. Quien ya no está activo aparece solo si registró tiempo en el período.
      * Se ordena por nombre y no por horas, para que no funcione como un ranking (RNF05).
      */
     public List<FilaCargaIntegrante> cargaPorIntegrante(Connection con, LocalDate desde, LocalDate hasta)
@@ -211,12 +213,18 @@ public class ReporteDAO {
             if (datos != null) {
                 filas.add(new FilaCargaIntegrante(integrante.getNombre(), integrante.getRol().getNombre(),
                         (BigDecimal) datos[0], (Integer) datos[1]));
+            } else if (integrante.estaActivo()) {
+                filas.add(new FilaCargaIntegrante(integrante.getNombre(), integrante.getRol().getNombre(),
+                        BigDecimal.ZERO, 0));
             }
         }
         return filas;
     }
 
-    /** Horas de cada integrante en el período, repartidas por el tipo de la solicitud (CU12, paso 5). */
+    /**
+     * Horas de cada integrante en el período, repartidas por el tipo de la solicitud (CU12, paso 5).
+     * Incluye a los mismos integrantes que cargaPorIntegrante().
+     */
     public List<FilaPorTipo> horasPorTipo(Connection con, LocalDate desde, LocalDate hasta) throws SQLException {
         String sql = "SELECT i.integrante_id, s.tipo_solicitud_id, SUM(i.tiempo_horas) FROM intervenciones i"
                 + " JOIN solicitudes s ON s.solicitud_id = i.solicitud_id"
@@ -239,6 +247,8 @@ public class ReporteDAO {
             FilaPorTipo fila = porIntegrante.get(integrante.getId());
             if (fila != null) {
                 filas.add(fila);
+            } else if (integrante.estaActivo()) {
+                filas.add(new FilaPorTipo(integrante.getNombre()));
             }
         }
         return filas;
