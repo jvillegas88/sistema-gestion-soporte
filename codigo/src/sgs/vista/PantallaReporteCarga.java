@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -48,20 +49,25 @@ public final class PantallaReporteCarga extends Pantalla {
                 Estilo.DERECHA, Estilo.DERECHA, Estilo.IZQUIERDA}, false);
     private final JLabel lblResumen = Estilo.nota(" ");
     private final JLabel lblDemoradas = Estilo.nota(" ");
+    private final JTabbedPane pestanias = new JTabbedPane();
+    private boolean cargaConsultada;
+    private boolean demoradasConsultadas;
 
     public PantallaReporteCarga(Window duenio, Sesion sesion) {
         super(duenio, sesion, "Reporte de carga por integrante");
         controlador = sesion.reportes();
 
-        JTabbedPane pestanias = new JTabbedPane();
         pestanias.addTab("Carga del equipo", armarCarga());
         pestanias.addTab("Solicitudes demoradas", armarDemoradas());
         JPanel cuerpo = cuerpoVertical();
         cuerpo.add(pestanias);
 
+        JButton exportar = Estilo.boton("Exportar...");
+        exportar.setToolTipText("Exporta la pestaña que se está viendo a un archivo CSV");
+        exportar.addActionListener(e -> exportar());
         JButton cerrar = Estilo.boton("Cerrar");
         cerrar.addActionListener(e -> dispose());
-        JPanel botones = Estilo.botonera(null, cerrar);
+        JPanel botones = Estilo.botonera(null, exportar, cerrar);
         botones.add(lblResumen, BorderLayout.WEST);
         armar("Reporte de carga por integrante", cuerpo, botones);
     }
@@ -132,7 +138,28 @@ public final class PantallaReporteCarga extends Pantalla {
             modeloCarga.addRow(new Object[] {"Total", "", Formatos.horas(horas), intervenciones});
             PantallaReporteEsfuerzo.llenarPorTipo(modeloTipos, controlador.horasPorTipo(desde, hasta), true);
             lblResumen.setText("Período del " + desde.format(Formatos.FECHA) + " al " + hasta.format(Formatos.FECHA) + ".");
+            cargaConsultada = true;
         });
+    }
+
+    /** RF24: guarda en un archivo la pestaña que se está viendo, para circularla. */
+    private void exportar() {
+        boolean carga = pestanias.getSelectedIndex() == 0;
+        if (carga ? !cargaConsultada : !demoradasConsultadas) {
+            Dialogos.aviso(this, carga ? "Consultá la carga del período antes de exportarla"
+                    : "Buscá las solicitudes demoradas antes de exportarlas");
+            return;
+        }
+        Path archivo = elegirArchivoParaGuardar(carga ? "reporte-carga-por-integrante.csv" : "solicitudes-demoradas.csv");
+        if (archivo == null) {
+            return;
+        }
+        List<String[]> contenido = carga
+                ? contenidoDeReporte("Reporte de carga por integrante", lblResumen.getText(), tablaCarga, tablaTipos)
+                : contenidoDeReporte("Solicitudes demoradas", lblDemoradas.getText(), tablaDemoradas);
+        if (ejecutar(() -> controlador.exportar(archivo, contenido))) {
+            Dialogos.informacion(this, "El reporte se exportó a " + archivo + ".");
+        }
     }
 
     /** Alternativa 6.A: las solicitudes abiertas que superan la cantidad de días indicada. */
@@ -148,6 +175,7 @@ public final class PantallaReporteCarga extends Pantalla {
             }
             lblDemoradas.setText(filas.isEmpty() ? "No hay solicitudes demoradas con ese criterio."
                     : filas.size() + (filas.size() == 1 ? " solicitud" : " solicitudes") + ", de la más antigua a la más nueva.");
+            demoradasConsultadas = true;
         });
     }
 

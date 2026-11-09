@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import javax.swing.Box;
@@ -48,6 +49,7 @@ public final class PantallaReporteEsfuerzo extends Pantalla {
     private final DefaultTableModel modeloTipos = Estilo.modeloTabla(titulosPorTipo("Cliente"));
     private final JTable tablaTipos = Estilo.tabla(modeloTipos, anchosPorTipo(), alineacionesPorTipo(), true);
     private final JLabel lblResumen = Estilo.nota(" ");
+    private final JButton exportar = Estilo.boton("Exportar...");
 
     public PantallaReporteEsfuerzo(Window duenio, Sesion sesion) {
         super(duenio, sesion, "Reporte de esfuerzo por cliente");
@@ -89,9 +91,9 @@ public final class PantallaReporteEsfuerzo extends Pantalla {
         cuerpo.add(Box.createVerticalStrut(8));
         cuerpo.add(tipos);
 
-        JButton exportar = Estilo.boton("Exportar...");
         exportar.setEnabled(false);
-        exportar.setToolTipText("La exportación del reporte a un archivo (RF24) todavía no está disponible");
+        exportar.setToolTipText("Consultá el reporte para poder exportarlo");
+        exportar.addActionListener(e -> exportar());
         JButton cerrar = Estilo.boton("Cerrar");
         cerrar.addActionListener(e -> dispose());
         JPanel botones = Estilo.botonera(null, exportar, cerrar);
@@ -133,7 +135,22 @@ public final class PantallaReporteEsfuerzo extends Pantalla {
                 resumen += ", comparado con el " + comparado;
             }
             lblResumen.setText(resumen + ". Producto: " + (producto == null ? "todos" : producto.getNombre()) + ".");
+            exportar.setEnabled(true);
+            exportar.setToolTipText(null);
         });
+    }
+
+    /** Alternativa 5.A: guarda en un archivo el reporte que se está viendo, para circularlo (RF24). */
+    private void exportar() {
+        Path archivo = elegirArchivoParaGuardar("reporte-esfuerzo-por-cliente.csv");
+        if (archivo == null) {
+            return;
+        }
+        List<String[]> contenido = contenidoDeReporte("Reporte de esfuerzo por cliente", lblResumen.getText(),
+                tablaEsfuerzo, tablaTipos);
+        if (ejecutar(() -> controlador.exportar(archivo, contenido))) {
+            Dialogos.informacion(this, "El reporte se exportó a " + archivo + ".");
+        }
     }
 
     private void llenarEsfuerzo(List<FilaEsfuerzoCliente> filas, boolean compara) {

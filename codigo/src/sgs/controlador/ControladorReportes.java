@@ -1,5 +1,7 @@
 package sgs.controlador;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
@@ -10,11 +12,14 @@ import sgs.modelo.consulta.FilaDemorada;
 import sgs.modelo.consulta.FilaEsfuerzoCliente;
 import sgs.modelo.consulta.FilaPorTipo;
 import sgs.modelo.excepcion.ReglaNegocioException;
+import sgs.persistencia.ArchivoCSV;
 import sgs.persistencia.DatosMaestros;
 import sgs.persistencia.ReporteDAO;
 
 /** CU11 y CU12: los reportes de gestión. Solo los puede consultar el rol de gestión (RNF05, RNF06). */
 public class ControladorReportes extends Controlador {
+
+    private static final char SEPARADOR_EXPORTACION = ';';
 
     private final ReporteDAO reporteDAO;
 
@@ -66,6 +71,20 @@ public class ControladorReportes extends Controlador {
             throw new ReglaNegocioException("La cantidad de días tiene que ser al menos 1");
         }
         return consultar(con -> reporteDAO.solicitudesDemoradas(con, diasUmbral));
+    }
+
+    /**
+     * CU11, alternativa 5.A, y CU12 (RF24): guarda el reporte que se está viendo en un archivo
+     * CSV, para circularlo. Se separa con punto y coma porque con la configuración regional de
+     * Argentina la coma es el separador decimal, y así la planilla de cálculo abre cada dato en
+     * su columna.
+     */
+    public void exportar(Path archivo, List<String[]> contenido) throws IOException, ReglaNegocioException {
+        exigirAcceso();
+        if (contenido.isEmpty()) {
+            throw new ReglaNegocioException("Consultá el reporte antes de exportarlo");
+        }
+        ArchivoCSV.escribir(archivo, SEPARADOR_EXPORTACION, contenido);
     }
 
     /** CU12, alternativa 2.A: el reporte está restringido al rol de gestión. */
