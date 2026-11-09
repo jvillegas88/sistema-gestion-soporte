@@ -1,4 +1,4 @@
-Pruebas desde la interfaz - 19/10/2026 19:01
+Pruebas desde la interfaz - 08/11/2026 01:27
 
 Inicio de sesión (RNF06)
   PASÓ   Contraseña incorrecta: El usuario o la contraseña no son correctos
@@ -73,5 +73,41 @@ PR-S-03: usuarios sin rol de gestión intentan abrir los reportes (RNF05, RNF06)
   PASÓ   Controlador, therrera (Desarrollo): Rechaza: Los reportes están restringidos al rol de gestión
   PASÓ   Controlador, vsosa (Desarrollo): Rechaza: Los reportes están restringidos al rol de gestión
 
+PR-I-02 (parte del TP4): importar prueba/datos/historico-prueba.csv (CU02) y comparar el reporte del 01/01/2026 al 31/03/2026 con el cálculo a mano
+  PASÓ   CU02 archivo con formato inválido (4.A): El archivo no tiene el formato esperado: el registro 1 tiene una comilla sin cerrar. No se importa ningún registro
+  PASÓ   CU02 con formato inválido no se puede importar: false
+  PASÓ   CU02 registros en el archivo: 14
+  PASÓ   CU02 a importar: 5
+  PASÓ   CU02 sin cliente identificado (8.A): 1
+  PASÓ   CU02 ya importados, la 4521 de los datos de prueba (RNF09): 1
+  PASÓ   CU02 rechazados: 8
+  PASÓ   CU02 motivos de rechazo: 8
+         Registro 5 (número 5005): sigue abierta en la herramienta actual. Se importa cuando se cierre
+         Registro 6 (número 5006): no tiene producto, que es obligatorio (RNF08)
+         Registro 7 (número 5007): no tiene el correo del solicitante
+         Registro 10 (número 5009): sigue abierta en la herramienta actual. Se importa cuando se cierre
+         Registro 11 (número 5010): el tiempo "dos horas" no es válido
+         Registro 12 (número 5011): el producto "Producto C" no existe en el sistema
+         Registro 13 (número 5012): el nombre del solicitante admite hasta 100 caracteres
+         Registro 14 (número 5013): tiene 15 campos y el encabezado tiene 14
+  PASÓ   CU02 resumen (paso 9): Se importaron 5 solicitudes (1 sin cliente identificado). 1 ya estaba importada y se omite. 8 se rechazaron.
+  PASÓ   CP-N-03 repetida: ya importados: 6
+  PASÓ   CP-N-03 repetida: a importar: 0
+  PASÓ   CP-N-03 repetida: el botón Importar queda deshabilitado: false
+  PASÓ   Importada 5002 sin responsable: 
+  PASÓ   Importada 5002 reabierta: queda a cargo de quien la reabre: Laura Gómez
+  PASÓ   Importada 5002 reabierta: el responsable la puede cerrar: true
+  PASÓ   CU11 Cliente A (5001 a las 23:30 del 31/03 y 5008): 2 | 3
+  PASÓ   CU11 Cliente B (5002): 1 | 0,5
+  PASÓ   CU11 Cliente C (5004, descartada sin tiempo): 1 | 0
+  PASÓ   CU11 Cliente no identificado (5003): 1 | 1,25
+  PASÓ   CU11 Total: 5 | 4,75
+  PASÓ   CU11 exportado (5.A): El reporte se exportó a reporte-esfuerzo-exportado.csv.
+  PASÓ   Archivo exportado: título: Reporte de esfuerzo por cliente
+  PASÓ   Archivo exportado: período: Período del 01/01/2026 al 31/03/2026. Producto: todos.
+  PASÓ   Archivo exportado: títulos de la tabla: Cliente;Solicitudes;Horas trabajadas;Tiempo en espera (días);Horas trabajadas período comparado;Variación de horas
+  PASÓ   Archivo exportado: Cliente B: Cliente B;1;0,5;0;;
+  PASÓ   Archivo exportado: Total igual a la pantalla: Total;5;4,75;0;;
+
 Solicitud creada por PR-I-01: 13
-Ejecuciones: 61. Dieron lo esperado: 61. No dieron lo esperado: 0
+Ejecuciones: 87. Dieron lo esperado: 87. No dieron lo esperado: 0

@@ -1,0 +1,16 @@
+﻿Reporte de esfuerzo por cliente
+Período del 01/01/2026 al 31/03/2026. Producto: todos.
+
+Cliente;Solicitudes;Horas trabajadas;Tiempo en espera (días);Horas trabajadas período comparado;Variación de horas
+Cliente A;2;3;0;;
+Cliente B;1;0,5;0;;
+Cliente C;1;0;0;;
+Cliente no identificado;1;1,25;0;;
+Total;5;4,75;0;;
+
+Cliente;Consulta funcional;Error de desarrollo;Error de infraestructura;Pedido de presupuesto;Pedido de infraestructura;Sin clasificar
+Cliente A;0;0;0;0;0;2
+Cliente B;0;0;0;0;0;1
+Cliente C;0;0;0;0;0;1
+Cliente no identificado;0;0;0;0;0;1
+Total;0;0;0;0;0;5

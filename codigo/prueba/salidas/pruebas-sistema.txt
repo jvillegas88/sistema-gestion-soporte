@@ -1,0 +1,18 @@
+CP-S-01, volumen (RNF09): importar historico-volumen.csv con 1154 registros y repetir la importación. Usuario lgomez (soporte funcional)
+  Primera importación: 1018 importadas (196 sin cliente identificado), 0 omitidas y 136 rechazadas
+  Tiempo: revisión del archivo 129 ms, registro en la base 1736 ms
+  PASÓ   Se leyeron todos los registros: 1154
+  PASÓ   Importadas, omitidas y rechazadas suman el total: 1154
+  Repetición: 0 a importar, 1018 omitidas y 136 rechazadas, en 72 ms
+  PASÓ   La repetición no importa nada: 0
+  PASÓ   La repetición omite lo ya importado: 1018
+  PASÓ   La repetición rechaza lo mismo: 136
+
+CP-S-02, desempeño (RNF11): los dos reportes del 01/04/2025 al 31/03/2026 (doce meses) en menos de 5 segundos, con los datos de CP-S-01. Usuario scastro (responsable de gestión)
+  Base local en Docker: la conexión no pasa por la VPN ni por el servidor de AWS
+  CU11: 4 clientes y 521 solicitudes en 52 ms
+  PASÓ   CU11 en menos de 5 segundos: true
+  CU12: en 33 ms
+  PASÓ   CU12 en menos de 5 segundos: true
+
+Ejecuciones: 7. Dieron lo esperado: 7. No dieron lo esperado: 0

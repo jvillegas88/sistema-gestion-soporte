@@ -2,9 +2,11 @@ package sgs.prueba;
 
 import java.awt.Window;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,11 +20,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
@@ -47,6 +51,9 @@ import sgs.persistencia.ConexionBD;
  * calculado a mano sobre los datos de prueba, y el de CU12 con el mismo total.</li>
  * <li>PR-S-03 (caso CP-S-03): los usuarios sin rol de gestión no pueden abrir los reportes,
  * ni desde el menú ni pidiéndoselos directamente al controlador.</li>
+ * <li>PR-I-02, parte del TP4 (casos CP-I-02 y CP-N-03): se importa un CSV de prueba (CU02), se
+ * repite la importación sin que se duplique nada (RNF09), el reporte de CU11 del trimestre se
+ * compara con el cálculo a mano y se exporta a un archivo (alternativa 5.A).</li>
  * </ul>
  * En el camino guarda las capturas del informe. Parte de los datos de prueba del TP2, así que
  * antes hay que recargar la base. Se ejecuta con probar-interfaz.sh, en una pantalla virtual.
@@ -54,6 +61,9 @@ import sgs.persistencia.ConexionBD;
 public final class PruebaInterfaz {
 
     private static final String CLAVE = "clave_de_ejemplo";
+    private static final String CSV_PRUEBA = "prueba/datos/historico-prueba.csv";
+    private static final String CSV_MALFORMADO = "prueba/datos/historico-malformado.csv";
+    private static final String REPORTE_EXPORTADO = "prueba/salidas/reporte-esfuerzo-exportado.csv";
     private static final String SOLICITUD_RECIBIDA = "Solicitud (\\d+) registrada";
 
     private final Manejador m;
@@ -82,7 +92,7 @@ public final class PruebaInterfaz {
         System.exit(codigo);
     }
 
-    private boolean ejecutar() throws SQLException {
+    private boolean ejecutar() throws SQLException, IOException {
         escribir("Pruebas desde la interfaz - " + Formatos.fechaHora(LocalDateTime.now()));
         escribir("");
         inicioDeSesion();
@@ -91,6 +101,7 @@ public final class PruebaInterfaz {
         prI02();
         clasificarYRegistrarHito12();
         prS03();
+        prI02Importacion();
         escribir("");
         escribir("Solicitud creada por PR-I-01: " + numero);
         escribir("Ejecuciones: " + ejecuciones + ". Dieron lo esperado: " + (ejecuciones - fallas.size())
@@ -660,6 +671,138 @@ public final class PruebaInterfaz {
             }
             return "(no está la fila " + primera + ")";
         });
+    }
+
+    // ------------------------------------------------------------------
+    // PR-I-02, parte del TP4: la importación (CU02), su repetición (RNF09) y el reporte exportado
+    // ------------------------------------------------------------------
+
+    private void prI02Importacion() throws IOException, SQLException {
+        escribir("");
+        escribir("PR-I-02 (parte del TP4): importar " + CSV_PRUEBA + " (CU02) y comparar el reporte del "
+                + "01/01/2026 al 31/03/2026 con el cálculo a mano");
+        iniciarSesion("lgomez");
+        abrirMenuParaCaptura("Solicitudes", "21-menu-soporte-funcional.png", true);
+        elegirMenu("Solicitudes", "Importar histórico...");
+        Window cu02 = m.esperarVentana("Importar histórico");
+
+        // Alternativa 4.A: un archivo con una comilla sin cerrar no se puede leer y no se importa nada
+        m.escribir(cu02, "Archivo CSV", CSV_MALFORMADO);
+        m.presionar(cu02, "Revisar");
+        JDialog formato = m.esperarMensaje();
+        String textoFormato = m.textoMensaje(formato);
+        m.capturar("21-cu02-formato-invalido.png", cu02, formato);
+        m.aceptar(formato);
+        verificar("CU02 archivo con formato inválido (4.A)", textoFormato, "El archivo no tiene el formato esperado: "
+                + "el registro 1 tiene una comilla sin cerrar. No se importa ningún registro");
+        verificar("CU02 con formato inválido no se puede importar",
+                String.valueOf(m.estaHabilitado(cu02, "Importar")), "false");
+
+        m.escribir(cu02, "Archivo CSV", CSV_PRUEBA);
+        m.presionar(cu02, "Revisar");
+        verificar("CU02 registros en el archivo", m.leerEsperando(cu02, "Registros en el archivo", "14"), "14");
+        verificar("CU02 a importar", m.leer(cu02, "A importar"), "5");
+        verificar("CU02 sin cliente identificado (8.A)", m.leer(cu02, "Sin cliente identificado"), "1");
+        verificar("CU02 ya importados, la 4521 de los datos de prueba (RNF09)",
+                m.leer(cu02, "Ya importados (se omiten)"), "1");
+        verificar("CU02 rechazados", m.leer(cu02, "Rechazados"), "8");
+        String rechazos = Manejador.enEDT(() -> Manejador.buscar(cu02, JTextArea.class, t -> true).getText());
+        verificar("CU02 motivos de rechazo", String.valueOf(rechazos.lines().count()), "8");
+        for (String motivo : rechazos.split("\n")) {
+            escribir("         " + motivo);
+        }
+        m.capturar("21-cu02-revision.png", cu02);
+        m.presionar(cu02, "Importar");
+        JDialog mensaje = m.esperarMensaje();
+        String resumen = m.textoMensaje(mensaje);
+        m.capturar("21-cu02-importada.png", cu02, mensaje);
+        m.aceptar(mensaje);
+        m.esperarCierre(cu02);
+        verificar("CU02 resumen (paso 9)", resumen,
+                "Se importaron 5 solicitudes (1 sin cliente identificado). 1 ya estaba importada y se omite. 8 se rechazaron.");
+
+        // CP-N-03 desde la aplicación: repetir la importación no duplica nada (RNF09)
+        elegirMenu("Solicitudes", "Importar histórico...");
+        Window otra = m.esperarVentana("Importar histórico");
+        m.escribir(otra, "Archivo CSV", CSV_PRUEBA);
+        m.presionar(otra, "Revisar");
+        verificar("CP-N-03 repetida: ya importados", m.leerEsperando(otra, "Ya importados (se omiten)", "6"), "6");
+        verificar("CP-N-03 repetida: a importar", m.leer(otra, "A importar"), "0");
+        verificar("CP-N-03 repetida: el botón Importar queda deshabilitado",
+                String.valueOf(m.estaHabilitado(otra, "Importar")), "false");
+        m.capturar("21-cu02-repetida.png", otra);
+        m.presionar(otra, "Cancelar");
+        m.esperarCierre(otra);
+
+        // Una importada no tiene responsable: al reabrirla queda a cargo de quien la reabre (CU07, 1.A)
+        int importada;
+        try (Connection con = ConexionBD.obtenerConexion()) {
+            importada = Integer.parseInt(consultar(con, "SELECT solicitud_id FROM solicitudes WHERE numero_origen = ?", 5002));
+        }
+        Window reabierta = abrirPorNumero(importada);
+        verificar("Importada 5002 sin responsable", m.leer(reabierta, "Responsable"), "");
+        m.presionar(reabierta, "Reabrir...");
+        Window reabrir = m.esperarVentana("Reabrir solicitud");
+        m.escribir(reabrir, "Motivo de la reapertura", "El cliente volvió a escribir por el mismo tema");
+        m.presionar(reabrir, "Continuar");
+        m.esperarCierre(reabrir);
+        verificar("Importada 5002 reabierta: queda a cargo de quien la reabre",
+                m.leerEsperando(reabierta, "Responsable", "Laura Gómez"), "Laura Gómez");
+        verificar("Importada 5002 reabierta: el responsable la puede cerrar",
+                String.valueOf(m.estaHabilitado(reabierta, "Cerrar solicitud...")), "true");
+        cerrarPantalla(reabierta);
+
+        // El reporte del trimestre solo tiene las importadas: el cálculo a mano está en la sección 12
+        iniciarSesion("scastro");
+        elegirMenu("Reportes", "Esfuerzo por cliente...");
+        Window cu11 = m.esperarVentana("Reporte de esfuerzo por cliente");
+        m.escribir(cu11, "Período", "01/01/2026");
+        m.escribirSegundo(cu11, "Período", "31/03/2026");
+        m.presionar(cu11, "Consultar");
+        Manejador.pausa(800);
+        JTable esfuerzo = m.tabla(cu11, 0);
+        verificar("CU11 Cliente A (5001 a las 23:30 del 31/03 y 5008)", fila(esfuerzo, "Cliente A", 1, 2), "2 | 3");
+        verificar("CU11 Cliente B (5002)", fila(esfuerzo, "Cliente B", 1, 2), "1 | 0,5");
+        verificar("CU11 Cliente C (5004, descartada sin tiempo)", fila(esfuerzo, "Cliente C", 1, 2), "1 | 0");
+        verificar("CU11 Cliente no identificado (5003)", fila(esfuerzo, "Cliente no identificado", 1, 2), "1 | 1,25");
+        verificar("CU11 Total", fila(esfuerzo, "Total", 1, 2), "5 | 4,75");
+        m.capturar("21-cu11-importadas.png", cu11);
+
+        // Alternativa 5.A: el reporte se exporta a un archivo y se compara con la pantalla
+        File exportado = new File(REPORTE_EXPORTADO);
+        Files.deleteIfExists(exportado.toPath());
+        m.presionar(cu11, "Exportar...");
+        Window guardar = m.esperarVentana("Exportar el reporte");
+        JFileChooser selector = Manejador.enEDT(() -> Manejador.buscar(guardar, JFileChooser.class, s -> true));
+        Manejador.enEDT(() -> {
+            selector.setSelectedFile(exportado.getAbsoluteFile());
+            return null;
+        });
+        Manejador.pausa(500);
+        m.capturar("21-cu11-exportar.png", guardar);
+        Manejador.enEDT(() -> {
+            selector.approveSelection();
+            return null;
+        });
+        JDialog exportacion = m.esperarMensaje();
+        // La carpeta depende de dónde está el proyecto: se verifica el nombre del archivo
+        String carpeta = exportado.getAbsoluteFile().getParent() + File.separator;
+        verificar("CU11 exportado (5.A)", m.textoMensaje(exportacion).replace(carpeta, ""),
+                "El reporte se exportó a " + exportado.getName() + ".");
+        m.aceptar(exportacion);
+        List<String> lineas = Files.readAllLines(exportado.toPath(), StandardCharsets.UTF_8);
+        verificar("Archivo exportado: título", lineas.get(0).replace("﻿", ""), "Reporte de esfuerzo por cliente");
+        verificar("Archivo exportado: período", lineas.get(1),
+                "Período del 01/01/2026 al 31/03/2026. Producto: todos.");
+        verificar("Archivo exportado: títulos de la tabla", lineas.get(3),
+                "Cliente;Solicitudes;Horas trabajadas;Tiempo en espera (días);Horas trabajadas período comparado;"
+                        + "Variación de horas");
+        verificar("Archivo exportado: Cliente B", lineas.stream().filter(l -> l.startsWith("Cliente B;")).findFirst()
+                .orElse("(falta)"), "Cliente B;1;0,5;0;;");
+        verificar("Archivo exportado: Total igual a la pantalla", lineas.stream().filter(l -> l.startsWith("Total;"))
+                .findFirst().orElse("(falta)"), "Total;5;4,75;0;;");
+        m.presionar(cu11, "Cerrar");
+        m.esperarCierre(cu11);
     }
 
     private static String consultar(Connection con, String sql, int id) throws SQLException {
