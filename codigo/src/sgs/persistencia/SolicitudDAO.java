@@ -8,7 +8,9 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import sgs.modelo.Integrante;
 import sgs.modelo.Modulo;
 import sgs.modelo.Producto;
@@ -191,6 +193,21 @@ public class SolicitudDAO implements DAO<Solicitud> {
             maestros.agregarSolicitante(solicitante);
         }
         return solicitante;
+    }
+
+    /**
+     * Números de origen de las solicitudes ya importadas (CU02, paso 5). Se leen todos de una
+     * vez en un conjunto, así revisar cada registro del archivo no es una consulta por registro.
+     */
+    public Set<Integer> numerosOrigenImportados(Connection con) throws SQLException {
+        Set<Integer> numeros = new HashSet<>();
+        String sql = "SELECT numero_origen FROM solicitudes WHERE numero_origen IS NOT NULL";
+        try (PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                numeros.add(rs.getInt(1));
+            }
+        }
+        return numeros;
     }
 
     /**

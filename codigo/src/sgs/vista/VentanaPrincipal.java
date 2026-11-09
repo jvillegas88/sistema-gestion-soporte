@@ -91,6 +91,8 @@ public final class VentanaPrincipal extends JFrame {
                 KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK), e -> registrarSolicitud()));
         solicitudes.add(item("Abrir solicitud por número...", rol.esAgente(), "Solo los agentes de soporte",
                 KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK), e -> abrirPorNumero()));
+        solicitudes.add(item("Importar histórico...", rol.puedeImportarHistorico(), "Solo soporte funcional", null,
+                e -> new PantallaImportarHistorico(this, sesion).mostrar()));
         solicitudes.addSeparator();
         solicitudes.add(item("Actualizar la bandeja", rol.esAgente(), "Solo los agentes de soporte",
                 KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), e -> actualizar()));

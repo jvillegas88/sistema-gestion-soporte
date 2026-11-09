@@ -3,6 +3,9 @@ package sgs.modelo;
 /** Organización que recibe el soporte (tabla clientes). */
 public class Cliente {
 
+    /** Nombre del cliente al que van las solicitudes importadas sin cliente (CU02, alternativa 8.A). */
+    public static final String NO_IDENTIFICADO = "Cliente no identificado";
+
     private final int id;
     private final String nombre;
     private final String dominioCorreo;
@@ -31,6 +34,10 @@ public class Cliente {
             return false;
         }
         return correo.toLowerCase().endsWith("@" + dominioCorreo.toLowerCase());
+    }
+
+    public boolean esNoIdentificado() {
+        return NO_IDENTIFICADO.equals(nombre);
     }
 
     @Override

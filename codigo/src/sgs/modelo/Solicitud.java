@@ -32,6 +32,8 @@ import sgs.modelo.excepcion.ReglaNegocioException;
 public class Solicitud {
 
     public static final int LARGO_ASUNTO = 200;
+    public static final String MOTIVO_IMPORTADA_RESUELTA = "Importada del histórico ya resuelta";
+    public static final String MOTIVO_IMPORTADA_DESCARTADA = "Importada del histórico: eliminada en la herramienta anterior";
     public static final String MENSAJE_HITOS =
             "Los hitos técnicos se registran en errores de desarrollo, errores de infraestructura y pedidos de infraestructura";
 
@@ -65,6 +67,17 @@ public class Solicitud {
             String asunto, String descripcion) {
         this(0, null, solicitante, producto, null, canal, null, null, null, null, fechaRecepcion, asunto,
                 descripcion, null);
+    }
+
+    /**
+     * Solicitud del histórico de la herramienta anterior (CU02). Conserva el número que tenía
+     * allí, que evita importarla dos veces (RNF09), y el tiempo total que se le dedicó. Llega
+     * por correo y sin clasificar, como las importadas de los datos de prueba (sección 17).
+     */
+    public static Solicitud importada(int numeroOrigen, Solicitante solicitante, Producto producto,
+            LocalDateTime fechaRecepcion, String asunto, BigDecimal tiempoHistorico) {
+        return new Solicitud(0, numeroOrigen, solicitante, producto, null, Canal.CORREO, null, null, null, null,
+                fechaRecepcion, asunto, null, tiempoHistorico);
     }
 
     /** Solicitud leída de la base. Sus registros los agrega el DAO con cargarRegistroGuardado(). */
@@ -311,6 +324,35 @@ public class Solicitud {
         if (getEstadoActual() != null) {
             throw new ReglaNegocioException("La solicitud ya estaba registrada");
         }
+        exigirDatosObligatorios();
+        cambiarEstado(Estado.NUEVA, autor, null);
+        asignar(autor, autor);
+    }
+
+    /**
+     * Incorpora una solicitud del histórico (CU02, paso 8). Llega ya cerrada en la herramienta
+     * anterior, así que entra al diagrama de estados directo al estado de cierre que le
+     * corresponde: Resuelta si allí se resolvió y Descartada si se eliminó. No tiene responsable,
+     * porque la herramienta anterior no registraba quién la trabajó.
+     */
+    public void importar(Estado cierre, Integrante autor) throws ReglaNegocioException {
+        if (getEstadoActual() != null) {
+            throw new ReglaNegocioException("La solicitud ya estaba registrada");
+        }
+        if (numeroOrigen == null) {
+            throw new ReglaNegocioException("Solo se importan solicitudes con su número de origen");
+        }
+        exigirDatosObligatorios();
+        String motivo = switch (cierre) {
+            case RESUELTA -> MOTIVO_IMPORTADA_RESUELTA;
+            case DESCARTADA -> MOTIVO_IMPORTADA_DESCARTADA;
+            default -> throw new ReglaNegocioException("Solo se importan solicitudes cerradas en la herramienta anterior");
+        };
+        cambiarEstado(cierre, autor, motivo);
+    }
+
+    /** Verifica los datos obligatorios de una solicitud nueva y avisa todos los que faltan (CU01, 4.A). */
+    private void exigirDatosObligatorios() throws ReglaNegocioException {
         List<String> faltan = new ArrayList<>();
         if (solicitante == null) {
             faltan.add("el solicitante");
@@ -336,8 +378,6 @@ public class Solicitud {
         if (fechaRecepcion.isAfter(LocalDateTime.now())) {
             throw new ReglaNegocioException("La fecha de recepción no puede ser posterior a hoy");
         }
-        cambiarEstado(Estado.NUEVA, autor, null);
-        asignar(autor, autor);
     }
 
     /**
@@ -513,7 +553,11 @@ public class Solicitud {
         cambiarEstado(cierre, autor, motivo);
     }
 
-    /** Vuelve a En curso una solicitud resuelta o cerrada sin confirmación (CU07, alternativa 1.A). */
+    /**
+     * Vuelve a En curso una solicitud resuelta o cerrada sin confirmación (CU07, alternativa 1.A).
+     * Una solicitud importada no tiene responsable, porque la herramienta anterior no lo
+     * registraba: al reabrirla queda a cargo de quien la reabre, que si no nadie la podría cerrar.
+     */
     public void reabrir(Integrante autor, String motivo) throws ReglaNegocioException {
         Estado actual = getEstadoActual();
         if (actual != Estado.RESUELTA && actual != Estado.CERRADA_SIN_CONFIRMACION) {
@@ -523,6 +567,9 @@ public class Solicitud {
             throw new ReglaNegocioException("Ingresá el motivo de la reapertura");
         }
         cambiarEstado(Estado.EN_CURSO, autor, motivo);
+        if (getResponsable() == null) {
+            asignar(autor, autor);
+        }
     }
 
     /** Descarta una solicitud nueva que no corresponde a soporte, sin borrarla (CU01, alternativa 10.A). */

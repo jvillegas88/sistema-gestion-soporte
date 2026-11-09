@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import sgs.modelo.Cliente;
 import sgs.modelo.Integrante;
 import sgs.modelo.Ordenamiento;
 import sgs.modelo.Producto;
@@ -36,7 +37,7 @@ import sgs.modelo.consulta.FilaPorTipo;
 public class ReporteDAO {
 
     /** Nombre del cliente al que van las solicitudes importadas sin cliente (CU02, alternativa 8.A). */
-    public static final String CLIENTE_NO_IDENTIFICADO = "Cliente no identificado";
+    public static final String CLIENTE_NO_IDENTIFICADO = Cliente.NO_IDENTIFICADO;
 
     private static final String DESDE_SOLICITUD_A_CLIENTE = " JOIN solicitantes so ON so.solicitante_id = s.solicitante_id"
             + " JOIN clientes c ON c.cliente_id = so.cliente_id ";

@@ -35,4 +35,9 @@ public final class Formatos {
     public static boolean estaVacio(String texto) {
         return texto == null || texto.isBlank();
     }
+
+    /** Un correo tiene una arroba, algo antes y un dominio con punto, sin espacios. */
+    public static boolean esCorreoValido(String correo) {
+        return correo != null && correo.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+");
+    }
 }

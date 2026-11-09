@@ -64,10 +64,8 @@ public class ControladorRegistrarSolicitud extends Controlador {
             throw new ReglaNegocioException("Completá el nombre, el correo y el cliente del solicitante");
         }
         String correoLimpio = correo.trim().toLowerCase();
-        if (!correoLimpio.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+")) {
-            throw new ReglaNegocioException("El correo no tiene un formato válido");
-        }
         Solicitante nuevo = new Solicitante(cliente, nombre.trim(), correoLimpio);
+        nuevo.validar();
         enTransaccion(con -> {
             if (solicitanteDAO.existeCorreo(con, correoLimpio)) {
                 throw new ReglaNegocioException("Ya hay un solicitante con el correo " + correoLimpio);

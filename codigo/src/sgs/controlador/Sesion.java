@@ -38,6 +38,10 @@ public class Sesion {
         return new ControladorRegistrarSolicitud(usuario, maestros, solicitudDAO);
     }
 
+    public ControladorImportarHistorico importarHistorico() {
+        return new ControladorImportarHistorico(usuario, maestros, solicitudDAO);
+    }
+
     public ControladorClasificarSolicitud clasificarSolicitud() {
         return new ControladorClasificarSolicitud(usuario, maestros, solicitudDAO);
     }

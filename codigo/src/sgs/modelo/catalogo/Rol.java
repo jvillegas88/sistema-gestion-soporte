@@ -42,6 +42,11 @@ public enum Rol implements Catalogo {
         return this == SOPORTE_FUNCIONAL;
     }
 
+    /** Importar el histórico es de soporte funcional (A02, CU02). */
+    public boolean puedeImportarHistorico() {
+        return this == SOPORTE_FUNCIONAL;
+    }
+
     /** Clasificar es de soporte funcional, y soporte técnico puede reclasificar (CU03). */
     public boolean puedeClasificar() {
         return this == SOPORTE_FUNCIONAL || this == SOPORTE_TECNICO;
