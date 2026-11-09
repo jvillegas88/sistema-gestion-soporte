@@ -15,7 +15,6 @@ public final class PantallaAbrirEspera extends Pantalla {
 
     private static final long serialVersionUID = 1L;
 
-    private final transient ControladorEsperaEstado controlador;
     private final JComboBox<MotivoEspera> cmbMotivo = new JComboBox<>(MotivoEspera.values());
 
     /** Lee la solicitud y crea la pantalla. Si no se puede leer, avisa y devuelve null. */
@@ -29,7 +28,6 @@ public final class PantallaAbrirEspera extends Pantalla {
 
     private PantallaAbrirEspera(Window duenio, Sesion sesion, ControladorEsperaEstado controlador) {
         super(duenio, sesion, "Registrar espera");
-        this.controlador = controlador;
         cmbMotivo.setSelectedIndex(-1);
 
         JPanel datos = Estilo.grupo("Espera");
