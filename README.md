@@ -14,12 +14,12 @@ Un sistema propio en el que cada integrante registra su intervención con su pro
 
 - `codigo/`: el prototipo en Java, desde el TP3.
   - `src/`: el programa, organizado en MVC: `sgs.vista`, `sgs.controlador`, `sgs.modelo` y `sgs.persistencia`.
-  - `prueba/`: las pruebas automáticas y, en `prueba/salidas/`, la salida de su última ejecución.
+  - `prueba/`: las pruebas automáticas, los archivos CSV que usan (en `prueba/datos/`, todos ficticios) y, en `prueba/salidas/`, la salida de su última ejecución.
 - `sql/`: scripts de la base de datos, en el orden en que se ejecutan (01 a 05).
 - `sql/salidas/`: salida de cada script.
 - `diagramas/`: diagramas del informe y sus fuentes (Mermaid y draw.io).
 
-El prototipo cubre el núcleo del sistema: registrar y clasificar solicitudes, registrar intervenciones con su tiempo, esperas y cambios de estado, hitos técnicos, el cierre con lo que exige cada tipo de solicitud, y los reportes de esfuerzo por cliente y de carga por integrante. Las opciones se habilitan según el rol de quien inicia sesión.
+El prototipo cubre el núcleo del sistema: registrar y clasificar solicitudes, registrar intervenciones con su tiempo, esperas y cambios de estado, hitos técnicos, el cierre con lo que exige cada tipo de solicitud, y los reportes de esfuerzo por cliente y de carga por integrante. También importa el histórico desde el CSV que exporta la herramienta actual y exporta los reportes a un archivo CSV. Las opciones se habilitan según el rol de quien inicia sesión.
 
 ## Tecnologías
 
@@ -73,5 +73,10 @@ Los usuarios de prueba tienen la clave `clave_de_ejemplo`:
 ### 3. Pruebas
 
 - `./probar.sh`: prueba de caja blanca de la validación del cierre. No necesita la base.
-- `./probar-interfaz.sh`: pruebas desde las pantallas, que recargan la base y la usan. Corren en una pantalla virtual, así que necesitan Linux con Xvfb (`xvfb-run`).
+- `./probar-interfaz.sh`: pruebas desde las pantallas, que recargan la base y la usan, incluida la importación de `prueba/datos/historico-prueba.csv` y la exportación de un reporte. Corren en una pantalla virtual, así que necesitan Linux con Xvfb (`xvfb-run`).
+- `./probar-sistema.sh`: pruebas de volumen y de desempeño. Genera un CSV ficticio de 1154 registros, lo importa dos veces y mide los reportes de doce meses. Recarga la base antes y después.
 - `./probar-sin-base.sh`: detiene el contenedor un momento para comprobar el mensaje que se muestra cuando la base no está disponible.
+
+### 4. Probar la importación
+
+Con el usuario lgomez, en Solicitudes, Importar histórico..., se elige `codigo/prueba/datos/historico-prueba.csv`. El sistema muestra qué va a importar, qué omite porque ya estaba y qué rechaza, con el motivo, y recién importa al confirmar. El archivo tiene las columnas de la herramienta actual más `requester_email`, el correo del solicitante.
