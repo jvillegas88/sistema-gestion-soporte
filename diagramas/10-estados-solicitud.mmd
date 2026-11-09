@@ -1,5 +1,6 @@
 ---
 config:
+  layout: elk
   themeVariables:
     fontSize: "17px"
 ---
@@ -9,6 +10,7 @@ stateDiagram-v2
     state "En curso" as EnCurso
     state "En espera" as EnEspera
     state cierre <<choice>>
+    state importacion <<choice>>
     state "Cerrada sin confirmación" as SinConfirmacion
     state "Resuelta" as Resuelta
     state "Cancelada" as Cancelada
@@ -16,6 +18,9 @@ stateDiagram-v2
     state "Duplicada" as Duplicada
 
     [*] --> Nueva : registrar(autor)
+    [*] --> importacion : importar(cierre, autor)
+    importacion --> Resuelta : [cerrada]
+    importacion --> Descartada : [eliminada]
     Nueva --> Descartada : descartar(autor, motivo)
     Nueva --> EnCurso : registrarIntervencion(intervencion)
     Nueva --> Duplicada : marcarDuplicada(original, autor)

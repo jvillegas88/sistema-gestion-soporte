@@ -14,6 +14,7 @@ classDiagram
         -nombre: String
         -dominioCorreo: String
         +correspondeAlCorreo(correo: String) boolean
+        +esNoIdentificado() boolean
     }
     class Solicitante {
         -id: int
@@ -21,6 +22,7 @@ classDiagram
         -nombre: String
         -correo: String
         +getCliente() Cliente
+        +validar() void
     }
     class Producto {
         -id: int
@@ -81,7 +83,9 @@ classDiagram
         +getEsperaAbierta() Espera
         +getEstimacion() Estimacion
         +getHistorial() List~RegistroSolicitud~
+        +importada(numeroOrigen: int, solicitante: Solicitante, producto: Producto, fechaRecepcion: LocalDateTime, asunto: String, tiempoHistorico: BigDecimal)$ Solicitud
         +registrar(autor: Integrante) void
+        +importar(cierre: Estado, autor: Integrante) void
         +clasificar(tipo: TipoSolicitud, prioridad: Prioridad, autor: Integrante, motivo: String) void
         +asignarModulo(modulo: Modulo) void
         +asignar(integrante: Integrante, autor: Integrante) void
@@ -99,6 +103,7 @@ classDiagram
         +tienePendientes() boolean
         +tomarPendiente() RegistroSolicitud
         +cargarRegistroGuardado(registro: RegistroSolicitud) void
+        -exigirDatosObligatorios() void
         -cambiarEstado(nuevo: Estado, autor: Integrante, motivo: String) void
         -terminarEsperaAbierta() void
     }

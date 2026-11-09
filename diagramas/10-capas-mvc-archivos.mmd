@@ -1,0 +1,97 @@
+---
+config:
+  layout: elk
+  class:
+    padding: 7
+    hideEmptyMembersBox: true
+  themeCSS: ".nodeLabel, .nodeLabel p, .label foreignObject div { line-height: 1.15 !important; }"
+---
+classDiagram
+    %% Se exporta a SVG y pasa a PNG con herramientas/svg-a-png.js, que corrige las flechas de herencia y agregación que ELK dobla muy cerca de la clase
+    direction TB
+    namespace vista {
+        class Pantalla {
+            <<abstract JDialog>>
+            #elegirArchivoParaGuardar(nombreSugerido) Path
+            #contenidoDeReporte(titulo, parametros, tablas)$ List~String[]~
+        }
+        class PantallaImportarHistorico {
+            -importacion: Importacion
+            -revisar() void
+            -importar() void
+        }
+        class PantallaReporteEsfuerzo {
+            -exportar() void
+        }
+        class Dialogos {
+            +ejecutar(padre, accion)$ boolean
+        }
+    }
+    namespace controlador {
+        class Controlador {
+            <<abstract>>
+            #enTransaccion(accion) void
+            #consultar(consulta) T
+        }
+        class ControladorImportarHistorico {
+            +revisar(archivo) Importacion
+            +importar(importacion) void
+        }
+        class ControladorReportes {
+            +exportar(archivo, contenido) void
+        }
+    }
+    namespace modelo {
+        class FilaHistorico {
+            +COLUMNAS: String[]$
+            -valores: String[]
+            +posiciones(encabezado)$ int[]
+            +numeroOrigen() int
+            +estadoDeCierre() Estado
+            +fechaRecepcion() LocalDateTime
+            +correo() String
+        }
+        class Importacion {
+            -solicitudes: List~Solicitud~
+            -solicitantesNuevos: List~Solicitante~
+            -rechazos: List~String~
+            +agregar(solicitud) void
+            +omitir() void
+            +rechazar(fila, motivo) void
+            +resumen() String
+        }
+        class Solicitud {
+            +importada(numeroOrigen, solicitante, producto, fecha, asunto, tiempo)$ Solicitud
+            +importar(cierre, autor) void
+        }
+    }
+    namespace persistencia {
+        class ArchivoCSV {
+            +leer(archivo, separador)$ List~String[]~
+            +escribir(archivo, separador, registros)$ void
+        }
+        class SolicitudDAO {
+            +numerosOrigenImportados(con) Set~Integer~
+            +guardar(con, solicitud) void
+        }
+        class SolicitanteDAO {
+            +listar(con) List~Solicitante~
+            +insertar(con, solicitante) int
+        }
+    }
+    Pantalla <|-- PantallaImportarHistorico
+    Pantalla <|-- PantallaReporteEsfuerzo
+    PantallaImportarHistorico ..> ControladorImportarHistorico
+    PantallaReporteEsfuerzo ..> ControladorReportes
+    Dialogos <.. Pantalla
+    Controlador <|-- ControladorImportarHistorico
+    Controlador <|-- ControladorReportes
+    ControladorImportarHistorico ..> ArchivoCSV
+    ControladorImportarHistorico ..> FilaHistorico
+    ControladorImportarHistorico ..> Importacion
+    ControladorImportarHistorico ..> SolicitudDAO
+    ControladorImportarHistorico ..> SolicitanteDAO
+    ControladorReportes ..> ArchivoCSV
+    Importacion o-- Solicitud
+    Importacion ..> FilaHistorico
+    SolicitudDAO ..> Solicitud
