@@ -119,7 +119,7 @@ DELIMITER ;
 -- 3. Pruebas
 -- ------------------------------------------------------------------
 
--- CP-N-01. CU06, excepción 3c y flujo 3b. RF08.
+-- CP-N-01. CU06, paso 6 y alternativa 6.A. RF08.
 -- Tiempo dedicado de una intervención: mayor que cero y hasta 24 horas,
 -- con hasta dos decimales (la precisión de tiempo_horas).
 -- Clases: CEV1 0 < t <= 24, CEI1 t <= 0, CEI2 t > 24 (rango).
@@ -156,7 +156,7 @@ CALL probar('CP-N-01', '30 (CEI2)', 'Rechaza',
 CALL probar('CP-N-01', '2,125 (CEI3)', 'Rechaza',
     'INSERT INTO intervenciones (solicitud_id, integrante_id, tipo_intervencion_id, descripcion, tiempo_horas) VALUES (1, 1, 1, ''CP-N-01 2,125'', 2.125)');
 
--- CP-N-02. CU01, excepción 4a. RNF08.
+-- CP-N-02. CU01, alternativa 4.A. RNF08.
 -- Solicitud completa. Esperado: acepta
 CALL probar('CP-N-02', 'Solicitud completa', 'Acepta',
     'INSERT INTO solicitudes (solicitante_id, producto_id, canal_id, fecha_recepcion, asunto) VALUES (1, 1, 1, ''2026-09-02 09:00:00'', ''CP-N-02 completa'')');
@@ -175,7 +175,7 @@ CALL probar('CP-N-03', 'Vuelve a importar el 5001', 'Rechaza',
 CALL probar('CP-N-03', 'Otra solicitud manual sin número de origen', 'Acepta',
     'INSERT INTO solicitudes (numero_origen, solicitante_id, producto_id, canal_id, fecha_recepcion, asunto) VALUES (NULL, 1, 1, 1, ''2026-09-02 10:00:00'', ''CP-N-03 manual'')');
 
--- CP-N-04. CU03, excepción 3b y flujo 3a. RF04.
+-- CP-N-04. CU03, paso 6 y alternativas 5.A y 6.A. RF04.
 -- La solicitud 1 es de Producto A. Módulo 2 de Producto A. Esperado: acepta
 CALL probar('CP-N-04', 'Módulo 2 de Producto A', 'Acepta',
     'UPDATE solicitudes SET modulo_nro = 2 WHERE solicitud_id = 1');
@@ -186,12 +186,12 @@ CALL probar('CP-N-04', 'Módulo 3, que es de Producto B', 'Rechaza',
 CALL probar('CP-N-04', 'Módulo sin informar', 'Acepta',
     'UPDATE solicitudes SET modulo_nro = NULL WHERE solicitud_id = 1');
 
--- CP-N-05. CU01, flujo 6a. RNF07.
+-- CP-N-05. CU01, alternativa 10.A. RNF07.
 -- Borrado físico de la solicitud 1, que tiene intervenciones. Esperado: rechaza (clave foránea)
 CALL probar('CP-N-05', 'Borra la solicitud 1, con intervenciones', 'Rechaza',
     'DELETE FROM solicitudes WHERE solicitud_id = 1');
 
--- CP-N-06. CU07, flujo principal y flujo 5a. RF10.
+-- CP-N-06. CU07, curso normal y alternativa 8.A. RF10.
 -- Espera cerrada, con fin posterior al inicio. Esperado: acepta
 CALL probar('CP-N-06', 'Espera cerrada, fin posterior al inicio', 'Acepta',
     'INSERT INTO esperas (solicitud_id, motivo_espera_id, autor_id, desde, hasta) VALUES (1, 1, 1, ''2026-09-02 10:00:00'', ''2026-09-02 16:00:00'')');

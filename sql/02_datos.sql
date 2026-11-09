@@ -71,7 +71,7 @@ INSERT INTO tipos_hito (tipo_hito_id, nombre) VALUES
 -- Datos maestros
 -- ------------------------------------------------------------------
 
--- El "Cliente no identificado" recibe lo importado sin cliente (CU02, 4a)
+-- El "Cliente no identificado" recibe lo importado sin cliente (CU02, alternativa 8.A)
 INSERT INTO clientes (cliente_id, nombre, dominio_correo) VALUES
     (1, 'Cliente no identificado', NULL),
     (2, 'Cliente A', 'cliente-a.com.ar'),
@@ -170,7 +170,7 @@ INSERT INTO asignaciones (solicitud_id, integrante_id, asignado_por_id, fecha) V
     (4, 1, 1, '2026-07-14 11:05:00'),
     (5, 1, 1, '2026-07-21 10:00:00'),
     (5, 3, 1, '2026-07-21 11:00:00'),
-    (5, 1, 3, '2026-07-22 11:00:00'),  -- vuelve a soporte funcional (CU05, 1a)
+    (5, 1, 3, '2026-07-22 11:00:00'),  -- vuelve a soporte funcional (CU05, alternativa 3.A)
     (6, 1, 1, '2026-08-03 14:00:00'),
     (6, 5, 7, '2026-08-04 09:00:00'),  -- gestión la pasa a desarrollo
     (7, 1, 1, '2026-08-10 09:00:00'),
@@ -297,7 +297,7 @@ INSERT INTO hitos_tecnicos (solicitud_id, tipo_hito_id, autor_id, fecha, referen
     (10, 2, 4, '2026-09-15 16:30:00', 'Deploy en testing del 15/09');
 
 -- ------------------------------------------------------------------
--- Reclasificación de la solicitud 5 (CU03, flujo 4a)
+-- Reclasificación de la solicitud 5 (CU03, alternativa 9.A)
 -- Se guarda la clasificación anterior y se actualiza la actual
 -- ------------------------------------------------------------------
 
@@ -319,7 +319,7 @@ WHERE solicitud_id = 5;
 COMMIT;
 
 -- ------------------------------------------------------------------
--- Alta de una solicitud completa en una transacción (CU01, paso 6):
+-- Alta de una solicitud completa en una transacción (CU01, pasos 11 y 12):
 -- la solicitud, su primer cambio de estado y su primera asignación.
 -- El número lo asigna la base (AUTO_INCREMENT).
 -- ------------------------------------------------------------------
@@ -345,7 +345,7 @@ COMMIT;
 SELECT @nueva AS solicitud_registrada;
 
 -- ------------------------------------------------------------------
--- Inserción que la base tiene que rechazar (CU06, excepción 3c):
+-- Inserción que la base tiene que rechazar (CU06, alternativa 6.A):
 -- una intervención con tiempo 0. Se espera el error del CHECK.
 -- ------------------------------------------------------------------
 

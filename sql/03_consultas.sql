@@ -47,7 +47,7 @@ GROUP BY ig.integrante_id, ig.nombre, r.rol_id, r.nombre
 ORDER BY r.rol_id, ig.nombre;
 
 -- ------------------------------------------------------------------
--- 3. Carga por integrante y tipo de solicitud (CU12, paso 4)
+-- 3. Carga por integrante y tipo de solicitud (CU12, paso 5)
 -- ------------------------------------------------------------------
 
 SELECT ig.nombre                            AS integrante,
@@ -124,7 +124,7 @@ WHERE ce.cambio_estado_id = (
 ORDER BY s.solicitud_id;
 
 -- ------------------------------------------------------------------
--- 7. Esperas abiertas y días que llevan (RF23, CU12 flujo 4a)
+-- 7. Esperas abiertas y días que llevan (RF23, CU12 alternativa 6.A)
 -- ------------------------------------------------------------------
 
 SELECT s.solicitud_id,
@@ -198,7 +198,7 @@ GROUP BY s.solicitud_id, s.asunto, ig.nombre, i.intervencion_id, i.tiempo_horas;
 
 -- ------------------------------------------------------------------
 -- 11. Modificación: se identifica el cliente de un solicitante que
---     estaba como "no identificado" (CU02, 4a). Como el cliente se
+--     estaba como "no identificado" (CU02, alternativa 8.A). Como el cliente se
 --     guarda en el solicitante, un solo UPDATE corrige todas sus
 --     solicitudes.
 -- ------------------------------------------------------------------
